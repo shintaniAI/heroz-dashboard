@@ -1,12 +1,14 @@
-import { num, yen } from "@/lib/config";
+import { num, yen, numOr0 } from "@/lib/config";
 import type { PlanRow } from "@/lib/dashboard-data";
 import { Ref } from "./Ref";
 
 type Props = { rows: PlanRow[]; spreadsheetId: string };
 
 export function PlanTable({ rows, spreadsheetId }: Props) {
-  const total = rows.reduce((s, r) => s + r.uriage.value, 0);
-  const sorted = [...rows].sort((a, b) => b.uriage.value - a.uriage.value);
+  const total = rows.reduce((s, r) => s + numOr0(r.uriage.value), 0);
+  const sorted = [...rows].sort(
+    (a, b) => numOr0(b.uriage.value) - numOr0(a.uriage.value)
+  );
 
   return (
     <div className="panel p-5">
@@ -54,7 +56,7 @@ export function PlanTable({ rows, spreadsheetId }: Props) {
                   />
                 </td>
                 <td className="py-2.5 text-right pr-5 num text-ink-4">
-                  {total > 0 ? `${((r.uriage.value / total) * 100).toFixed(1)}%` : "-"}
+                  {total > 0 ? `${((numOr0(r.uriage.value) / total) * 100).toFixed(1)}%` : "-"}
                 </td>
               </tr>
             ))}

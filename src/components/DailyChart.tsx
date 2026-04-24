@@ -11,6 +11,7 @@ import {
   Legend,
 } from "recharts";
 import type { DailyRow } from "@/lib/dashboard-data";
+import { numOr0 } from "@/lib/config";
 
 type ChartRow = {
   date: string;
@@ -24,9 +25,9 @@ export function DailyChart({ data }: { data: DailyRow[] }) {
   const rows: ChartRow[] = data.map((r) => ({
     date: r.date,
     dow: r.dow,
-    target: r.target.value,
-    reservation: r.reservation.value,
-    actualRes: r.actualRes.value,
+    target: numOr0(r.target.value),
+    reservation: numOr0(r.reservation.value),
+    actualRes: numOr0(r.actualRes.value),
   }));
 
   return (

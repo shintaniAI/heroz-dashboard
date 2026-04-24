@@ -1,4 +1,4 @@
-import { yen, pct } from "@/lib/config";
+import { yen, pct, num } from "@/lib/config";
 import type { Sourced } from "@/lib/config";
 import type { KgiRow, MeetingKpi } from "@/lib/dashboard-data";
 import { Ref } from "./Ref";
@@ -14,7 +14,11 @@ type Props = {
 
 export function CpaCard({ cpa, cpm, kokoku, keiyakuSu, menuai, spreadsheetId }: Props) {
   const budgetUse =
-    kokoku.target.value > 0 ? kokoku.actual.value / kokoku.target.value : 0;
+    isFinite(kokoku.target.value) &&
+    kokoku.target.value > 0 &&
+    isFinite(kokoku.actual.value)
+      ? kokoku.actual.value / kokoku.target.value
+      : NaN;
 
   return (
     <div className="panel p-5">
@@ -43,7 +47,7 @@ export function CpaCard({ cpa, cpm, kokoku, keiyakuSu, menuai, spreadsheetId }: 
           <Ref
             src={keiyakuSu.actual}
             spreadsheetId={spreadsheetId}
-            display={`${keiyakuSu.actual.value}件`}
+            display={`${num(keiyakuSu.actual.value)}件`}
             className="text-ink-3"
           />
         </div>

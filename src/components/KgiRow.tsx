@@ -1,4 +1,4 @@
-import { pct, yen } from "@/lib/config";
+import { pct, yen, numOr0 } from "@/lib/config";
 import type { KgiRow } from "@/lib/dashboard-data";
 import { Ref } from "./Ref";
 
@@ -15,13 +15,12 @@ export function KgiRowCard({
   hero = false,
   formatter = yen,
 }: Props) {
+  const progressVal = row.progress.value;
   const tone =
-    row.progress.value >= 0.9
+    isFinite(progressVal) && progressVal >= 0.9
       ? "ok"
-      : row.progress.value >= 0.6
+      : isFinite(progressVal) && progressVal >= 0.6
       ? "warn"
-      : row.progress.value < 0 || row.actual.value < 0
-      ? "bad"
       : "bad";
 
   const toneBar = {
@@ -36,16 +35,17 @@ export function KgiRowCard({
     bad: "text-bad bg-bad-soft",
   }[tone];
 
-  const achievement =
-    row.genjiten.value > 0 ? row.actual.value / row.genjiten.value : 0;
+  const target = numOr0(row.target.value);
+  const actual = numOr0(row.actual.value);
+  const genjiten = numOr0(row.genjiten.value);
 
   const progressPct = Math.max(
     0,
-    Math.min(1, row.target.value > 0 ? row.actual.value / row.target.value : 0)
+    Math.min(1, target > 0 ? actual / target : 0)
   );
   const genjitenPct = Math.max(
     0,
-    Math.min(1, row.target.value > 0 ? row.genjiten.value / row.target.value : 0)
+    Math.min(1, target > 0 ? genjiten / target : 0)
   );
 
   return (
@@ -80,9 +80,9 @@ export function KgiRowCard({
             style={{ width: `${progressPct * 100}%` }}
           />
         </div>
-        <div className="flex justify-between text-[10.5px] text-ink-4 num">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10.5px] text-ink-4 num">
           <span>
-            実績/目標{" "}
+            月目標{" "}
             <Ref
               src={row.target}
               spreadsheetId={spreadsheetId}
@@ -90,7 +90,7 @@ export function KgiRowCard({
               className="text-ink-3"
             />
           </span>
-          <span>
+          <span className="text-right">
             現時点目標{" "}
             <Ref
               src={row.genjiten}
@@ -99,22 +99,29 @@ export function KgiRowCard({
               className="text-ink-3"
             />
           </span>
-        </div>
-        <div className="flex justify-between text-[10.5px] num">
-          <span className="text-ink-4">
+          <span>
             差異{" "}
             <Ref
               src={row.diff}
               spreadsheetId={spreadsheetId}
               display={formatter(row.diff.value)}
-              className={row.diff.value < 0 ? "text-bad" : "text-ok"}
+              className={
+                isFinite(row.diff.value)
+                  ? row.diff.value < 0
+                    ? "text-bad"
+                    : "text-ok"
+                  : "text-ink-3"
+              }
             />
           </span>
-          <span className="text-ink-4">
-            現時点達成{" "}
-            <span className={achievement >= 1 ? "text-ok" : "text-ink-3"}>
-              {pct(achievement, 0)}
-            </span>
+          <span className="text-right">
+            月次進捗率{" "}
+            <Ref
+              src={row.monthProgress}
+              spreadsheetId={spreadsheetId}
+              display={pct(row.monthProgress.value, 0)}
+              className="text-ink-3"
+            />
           </span>
         </div>
       </div>

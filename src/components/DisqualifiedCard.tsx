@@ -1,4 +1,4 @@
-import { num, pct } from "@/lib/config";
+import { num, pct, numOr0 } from "@/lib/config";
 import type { FailureRow } from "@/lib/dashboard-data";
 import { Ref } from "./Ref";
 
@@ -11,7 +11,7 @@ type Props = {
 const palette = ["bg-bad", "bg-bad/70", "bg-warn", "bg-warn/70"];
 
 export function DisqualifiedCard({ items, totalMeetings, spreadsheetId }: Props) {
-  const total = items.reduce((s, it) => s + it.actual.value, 0);
+  const total = items.reduce((s, it) => s + numOr0(it.actual.value), 0);
 
   return (
     <div className="panel p-5">
@@ -36,7 +36,7 @@ export function DisqualifiedCard({ items, totalMeetings, spreadsheetId }: Props)
             key={item.label}
             className={palette[i % palette.length]}
             style={{
-              width: total > 0 ? `${(item.actual.value / total) * 100}%` : "0%",
+              width: total > 0 ? `${(numOr0(item.actual.value) / total) * 100}%` : "0%",
             }}
           />
         ))}
@@ -53,7 +53,7 @@ export function DisqualifiedCard({ items, totalMeetings, spreadsheetId }: Props)
             </div>
             <div className="flex items-baseline gap-3">
               <span className="text-[11px] text-ink-muted num">
-                {total > 0 ? pct(item.actual.value / total, 0) : "-"}
+                {total > 0 ? pct(numOr0(item.actual.value) / total, 0) : "-"}
               </span>
               <Ref
                 src={item.actual}

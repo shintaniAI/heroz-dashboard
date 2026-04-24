@@ -51,3 +51,28 @@ export async function getRanges(
     (vr) => (vr.values ?? []) as (string | number | null)[][]
   );
 }
+
+let cachedTabGids: { id: string; map: Map<string, number> } | null = null;
+
+export async function getTabGids(
+  spreadsheetId: string
+): Promise<Map<string, number>> {
+  if (cachedTabGids && cachedTabGids.id === spreadsheetId) {
+    return cachedTabGids.map;
+  }
+  const sheets = getSheetsClient();
+  const res = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets.properties(title,sheetId)",
+  });
+  const map = new Map<string, number>();
+  for (const s of res.data.sheets ?? []) {
+    const title = s.properties?.title;
+    const id = s.properties?.sheetId;
+    if (title && id !== undefined && id !== null) {
+      map.set(title, id);
+    }
+  }
+  cachedTabGids = { id: spreadsheetId, map };
+  return map;
+}

@@ -1,4 +1,4 @@
-import { num, pct } from "@/lib/config";
+import { num, pct, numOr0 } from "@/lib/config";
 import type { Sourced } from "@/lib/config";
 import type { MeetingKpi } from "@/lib/dashboard-data";
 import { Ref } from "./Ref";
@@ -36,10 +36,10 @@ export function Funnel({
   spreadsheetId,
 }: Props) {
   const maxVal = Math.max(
-    totalMeetings.actual.value,
-    menuai.actual.value,
-    keiyakuSu.actual.value,
-    nyuukinSu.actual.value,
+    numOr0(totalMeetings.actual.value),
+    numOr0(menuai.actual.value),
+    numOr0(keiyakuSu.actual.value),
+    numOr0(nyuukinSu.actual.value),
     failuresSum,
     1
   );
@@ -80,7 +80,9 @@ export function Funnel({
       value: nyuukinSu.actual.value,
       src: nyuukinSu.actual,
       footnote:
-        keiyakuSu.actual.value > 0
+        isFinite(keiyakuSu.actual.value) &&
+        keiyakuSu.actual.value > 0 &&
+        isFinite(nyuukinSu.actual.value)
           ? `対契約 ${pct(nyuukinSu.actual.value / keiyakuSu.actual.value, 0)}`
           : undefined,
       tone: "win",
@@ -88,9 +90,11 @@ export function Funnel({
   ];
 
   const conversion =
-    totalMeetings.actual.value > 0
+    isFinite(totalMeetings.actual.value) &&
+    totalMeetings.actual.value > 0 &&
+    isFinite(keiyakuSu.actual.value)
       ? keiyakuSu.actual.value / totalMeetings.actual.value
-      : 0;
+      : NaN;
 
   const toneBg = {
     default: "bg-ink-2",
@@ -117,7 +121,7 @@ export function Funnel({
 
       <div className="space-y-2.5">
         {stages.map((stage, i) => {
-          const widthPct = Math.max(6, (stage.value / maxVal) * 100);
+          const widthPct = Math.max(6, (numOr0(stage.value) / maxVal) * 100);
           return (
             <div key={stage.label} className="group">
               <div className="flex items-baseline justify-between mb-1">

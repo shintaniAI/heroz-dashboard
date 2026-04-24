@@ -1,4 +1,4 @@
-import { decodeView, yen, num, pct, viewLabel } from "@/lib/config";
+import { decodeView, yen, num, pct, numOr0, viewLabel } from "@/lib/config";
 import { fetchDashboard } from "@/lib/dashboard-data";
 import { ViewSwitcher } from "@/components/ViewSwitcher";
 import { Kpi } from "@/components/Kpi";
@@ -85,28 +85,32 @@ export default async function Page({
     cpa,
     cpm,
     organic,
+    organicTotal,
     ads,
+    adsTotal,
     plans,
     daily,
     daysElapsed,
     monthDays,
   } = data;
 
-  const failuresSum = failures.reduce((s, f) => s + f.actual.value, 0);
+  const failuresSum = failures.reduce((s, f) => s + numOr0(f.actual.value), 0);
   const failuresLabel = `計 ${num(failuresSum)}件`;
 
   const contractProgress = keiyakuSu.progress.value;
   const contractAccent =
-    contractProgress >= 0.9 ? "ok" : contractProgress >= 0.6 ? "warn" : "bad";
-  const rateAccent =
-    keiyakuRate.actual.value >= 0.3
+    isFinite(contractProgress) && contractProgress >= 0.9
       ? "ok"
-      : keiyakuRate.actual.value >= 0.2
+      : isFinite(contractProgress) && contractProgress >= 0.6
       ? "warn"
       : "bad";
 
   const monthProgress =
-    monthDays.value > 0 ? daysElapsed.value / monthDays.value : 0;
+    isFinite(monthDays.value) &&
+    monthDays.value > 0 &&
+    isFinite(daysElapsed.value)
+      ? daysElapsed.value / monthDays.value
+      : NaN;
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
@@ -156,7 +160,7 @@ export default async function Page({
                 sub="キャンセル"
                 subSrc={kyansuRate.actual}
                 subValue={pct(kyansuRate.actual.value, 0)}
-                accent={rateAccent}
+                accent="neutral"
                 spreadsheetId={spreadsheetId}
               />
               <Kpi
@@ -239,13 +243,16 @@ export default async function Page({
             <MediaTable
               title="オーガニック媒体別"
               rows={organic}
+              total={organicTotal}
               spreadsheetId={spreadsheetId}
+              max={30}
             />
             <MediaTable
-              title="広告・アフィ媒体別（上位15）"
+              title="広告・アフィ媒体別"
               rows={ads}
+              total={adsTotal}
               spreadsheetId={spreadsheetId}
-              max={15}
+              max={30}
             />
           </div>
         </section>

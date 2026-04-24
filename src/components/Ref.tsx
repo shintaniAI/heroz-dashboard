@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { sheetCellUrl, type Sourced } from "@/lib/config";
+import { sheetCellUrl, MISSING, type Sourced } from "@/lib/config";
 
 type Props = {
   src: Sourced;
@@ -43,7 +43,7 @@ export function Ref({ src, spreadsheetId, display, className = "" }: Props) {
     }
   };
 
-  const url = sheetCellUrl(spreadsheetId, src.tab, src.cell);
+  const url = sheetCellUrl(src, spreadsheetId);
   const fullRef = `'${src.tab}'!${src.cell}`;
 
   return (
@@ -100,7 +100,7 @@ export function Ref({ src, spreadsheetId, display, className = "" }: Props) {
             >
               {copied ? "コピー済" : "参照をコピー"}
             </button>
-            {src.cell !== "—" && (
+            {src.cell !== MISSING && (
               <a
                 href={url}
                 target="_blank"
