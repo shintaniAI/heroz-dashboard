@@ -67,6 +67,7 @@ export function ViewSwitcher({ current }: Props) {
   const pillBase =
     "px-3 py-1.5 text-xs font-semibold tracking-wide transition-colors num";
 
+  const allKinds: KindKey[] = ["契約", "発生"];
   const availableKinds = kindsForMonth(current.month);
   const availableDays = daysForMonthKind(current.month, current.kind);
   const hasDays = availableDays.some((d) => d !== null);
@@ -86,19 +87,27 @@ export function ViewSwitcher({ current }: Props) {
       </select>
 
       <div className="flex rounded-md overflow-hidden border border-line bg-paper">
-        {availableKinds.map((k) => (
-          <button
-            key={k}
-            onClick={() => onKindChange(k)}
-            className={`${pillBase} ${
-              current.kind === k
-                ? "bg-ink text-paper"
-                : "text-ink-3 hover:bg-canvas"
-            }`}
-          >
-            {k}
-          </button>
-        ))}
+        {allKinds.map((k) => {
+          const enabled = availableKinds.includes(k);
+          const active = current.kind === k;
+          return (
+            <button
+              key={k}
+              onClick={() => enabled && onKindChange(k)}
+              disabled={!enabled}
+              title={enabled ? "" : `このシートに ${k} タブはありません`}
+              className={`${pillBase} ${
+                active
+                  ? "bg-ink text-paper"
+                  : enabled
+                  ? "text-ink-3 hover:bg-canvas"
+                  : "text-ink-muted/50 bg-canvas/50 cursor-not-allowed line-through"
+              }`}
+            >
+              {k}
+            </button>
+          );
+        })}
       </div>
 
       {hasDays && (
