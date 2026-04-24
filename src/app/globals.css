@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0b1120;
+  --card: #0f172a;
+  --muted: #94a3b8;
+  --border: #1e293b;
+  --accent: #3b82f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+html, body {
+  background: var(--bg);
+  color: #e2e8f0;
+  font-family: "Inter", "Hiragino Sans", "Meiryo", system-ui, -apple-system, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+* { box-sizing: border-box; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
