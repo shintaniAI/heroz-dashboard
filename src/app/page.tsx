@@ -1,6 +1,5 @@
 import { VIEWS, type ViewKey, yen, num, pct } from "@/lib/config";
 import { fetchDashboard } from "@/lib/dashboard-data";
-import { mockDashboard } from "@/lib/mock-data";
 import { ViewSwitcher } from "@/components/ViewSwitcher";
 import { Kpi } from "@/components/Kpi";
 import { MediaTable } from "@/components/MediaTable";
@@ -15,22 +14,53 @@ function isValidView(v: string | undefined): v is ViewKey {
   return !!v && (VIEWS as readonly string[]).includes(v);
 }
 
+function ErrorScreen({ view, message }: { view: ViewKey; message: string }) {
+  const hasEmail = !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const hasKey = !!process.env.GOOGLE_PRIVATE_KEY;
+  const emailSample = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.slice(0, 20) ?? "(未設定)";
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100 p-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <h1 className="text-2xl font-bold">HEROZZ 経営ダッシュボード</h1>
+        <div className="card p-6 border-rose-700 space-y-4">
+          <h2 className="text-lg font-semibold text-rose-300">Sheets API 接続エラー</h2>
+          <pre className="text-sm bg-slate-900 p-3 rounded overflow-x-auto text-rose-200">{message}</pre>
+          <div className="text-sm text-slate-300 space-y-2">
+            <div>環境変数状態:</div>
+            <ul className="list-disc pl-6 text-xs space-y-1">
+              <li>GOOGLE_SERVICE_ACCOUNT_EMAIL: {hasEmail ? `✅ 設定済 (${emailSample}...)` : "❌ 未設定"}</li>
+              <li>GOOGLE_PRIVATE_KEY: {hasKey ? "✅ 設定済" : "❌ 未設定"}</li>
+              <li>現在のビュー: {view}</li>
+            </ul>
+          </div>
+          <div className="text-xs text-slate-400 space-y-1 pt-2 border-t border-slate-700">
+            <div className="font-semibold text-slate-300">「invalid_grant: account not found」の場合:</div>
+            <div>1. GOOGLE_SERVICE_ACCOUNT_EMAIL がJSON鍵の `client_email` と完全一致しているか確認</div>
+            <div>2. サービスアカウントがGCPコンソールで削除されていないか確認</div>
+            <div>3. GOOGLE_PRIVATE_KEY の改行が `\n` 形式で保存されているか確認</div>
+            <div>4. 対象スプレッドシートにサービスアカウントメールが「閲覧者」で共有されているか確認</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; mock?: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const sp = await searchParams;
   const view: ViewKey = isValidView(sp.view) ? sp.view : "契約本日";
-  const useMock = sp.mock === "1" || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 
   let data;
-  let error: string | null = null;
   try {
-    data = useMock ? mockDashboard(view) : await fetchDashboard(view);
+    data = await fetchDashboard(view);
   } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
-    data = mockDashboard(view);
+    const message = e instanceof Error ? e.message : String(e);
+    return <ErrorScreen view={view} message={message} />;
   }
 
   const { kgi, meeting, organic, ads, daily, salespeople, plans } = data;
@@ -43,17 +73,10 @@ export default async function Page({
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">HEROZZ 経営ダッシュボード</h1>
             <p className="text-sm text-slate-400 mt-1">
               {data.view} ・ 基準日: {data.asOf}
-              {useMock && <span className="ml-3 text-amber-400">[モック表示中]</span>}
             </p>
           </div>
           <ViewSwitcher current={view} />
         </header>
-
-        {error && (
-          <div className="card p-4 border-rose-700 text-rose-300 text-sm">
-            Sheets API接続エラー: {error}（モックデータで表示中）
-          </div>
-        )}
 
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Kpi
