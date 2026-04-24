@@ -37,6 +37,32 @@ export async function getRange(
   return (res.data.values ?? []) as (string | number | null)[][];
 }
 
+export async function getRangeWithFormulas(
+  spreadsheetId: string,
+  range: string
+): Promise<{
+  values: (string | number | null)[][];
+  formulas: (string | number | null)[][];
+}> {
+  const sheets = getSheetsClient();
+  const [valRes, formRes] = await Promise.all([
+    sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      valueRenderOption: "UNFORMATTED_VALUE",
+    }),
+    sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      valueRenderOption: "FORMULA",
+    }),
+  ]);
+  return {
+    values: (valRes.data.values ?? []) as (string | number | null)[][],
+    formulas: (formRes.data.values ?? []) as (string | number | null)[][],
+  };
+}
+
 export async function getRanges(
   spreadsheetId: string,
   ranges: string[]

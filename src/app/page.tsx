@@ -10,6 +10,8 @@ import { MediaTable } from "@/components/MediaTable";
 import { DailyChart } from "@/components/DailyChart";
 import { DailyTable } from "@/components/DailyTable";
 import { PlanTable } from "@/components/PlanTable";
+import { ChannelForecastTable } from "@/components/ChannelForecastTable";
+import { Ref } from "@/components/Ref";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
@@ -66,6 +68,8 @@ export default async function Page({
   const {
     spreadsheetId,
     asOf,
+    mikomiZensu,
+    jyuchuYoso,
     uriage,
     jinkenhi,
     gaichuhi,
@@ -86,12 +90,15 @@ export default async function Page({
     failures,
     cpa,
     cpm,
+    cpo,
+    roi,
     organic,
     organicTotal,
     ads,
     adsTotal,
     plans,
     daily,
+    channelForecast,
     daysElapsed,
     monthDays,
   } = data;
@@ -130,6 +137,26 @@ export default async function Page({
               <span>
                 月進捗 {pct(monthProgress, 0)} ({num(daysElapsed.value)}/
                 {num(monthDays.value)}日)
+              </span>
+              <span className="text-ink-muted">·</span>
+              <span>
+                見込全数{" "}
+                <Ref
+                  src={mikomiZensu}
+                  spreadsheetId={spreadsheetId}
+                  display={num(mikomiZensu.value)}
+                  className="text-ink-2 font-semibold"
+                />
+              </span>
+              <span className="text-ink-muted">·</span>
+              <span>
+                受注予想{" "}
+                <Ref
+                  src={jyuchuYoso}
+                  spreadsheetId={spreadsheetId}
+                  display={num(jyuchuYoso.value)}
+                  className="text-accent font-semibold"
+                />
               </span>
             </div>
           </div>
@@ -215,6 +242,8 @@ export default async function Page({
             <CpaCard
               cpa={cpa}
               cpm={cpm}
+              cpo={cpo}
+              roi={roi}
               kokoku={kokoku}
               keiyakuSu={keiyakuSu}
               menuai={menuai}
@@ -271,6 +300,18 @@ export default async function Page({
               <DailyTable rows={daily} spreadsheetId={spreadsheetId} />
               <DailyChart data={daily} />
             </div>
+          </section>
+        )}
+
+        {channelForecast.length > 0 && (
+          <section>
+            <div className="label text-ink-3 mb-1 text-[9.5px]">
+              Channel Forecast (予測)
+            </div>
+            <ChannelForecastTable
+              rows={channelForecast}
+              spreadsheetId={spreadsheetId}
+            />
           </section>
         )}
 

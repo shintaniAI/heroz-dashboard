@@ -1,4 +1,4 @@
-import { getRange, getTabGids } from "./sheets";
+import { getRangeWithFormulas, getTabGids } from "./sheets";
 import {
   SHEETS,
   tabName,
@@ -7,8 +7,9 @@ import {
   MISSING,
   type ViewKey,
   type Sourced,
-  makeSourcer,
+  classifyCell,
   derived,
+  cellRef,
 } from "./config";
 
 export type KgiRow = {
@@ -59,6 +60,21 @@ export type PlanRow = {
   uriage: Sourced;
 };
 
+export type ChannelForecastRow = {
+  name: string;
+  yoyaku: Sourced;
+  cancelRate: Sourced;
+  cancelSu: Sourced;
+  menuaiSu: Sourced;
+  keiyakuRate: Sourced;
+  keiyakuSu: Sourced;
+  kokokuHi: Sourced;
+  cpf: Sourced;
+  yoyakuCpa: Sourced;
+  menuaiCpa: Sourced;
+  cpo: Sourced;
+};
+
 export type DashboardData = {
   view: ViewKey;
   tab: string;
@@ -67,6 +83,8 @@ export type DashboardData = {
   spreadsheetId: string;
   daysElapsed: Sourced;
   monthDays: Sourced;
+  mikomiZensu: Sourced;
+  jyuchuYoso: Sourced;
   uriage: KgiRow;
   jinkenhi: KgiRow;
   gaichuhi: KgiRow;
@@ -87,12 +105,15 @@ export type DashboardData = {
   failures: FailureRow[];
   cpa: Sourced;
   cpm: Sourced;
+  cpo: Sourced;
+  roi: Sourced;
   organicTotal: MediaRow | null;
   adsTotal: MediaRow | null;
   organic: MediaRow[];
   ads: MediaRow[];
   plans: PlanRow[];
   daily: DailyRow[];
+  channelForecast: ChannelForecastRow[];
 };
 
 function serialToShortDate(serial: number): string {
@@ -113,18 +134,40 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
   const tab = tabName(view);
   const quoted = `'${tab}'`;
 
-  const [main, tabGids] = await Promise.all([
-    getRange(SHEETS.sourceId, `${quoted}!A1:AC200`) as Promise<
-      (string | number | null)[][]
-    >,
+  const [{ values: main, formulas }, tabGids] = await Promise.all([
+    getRangeWithFormulas(SHEETS.sourceId, `${quoted}!A1:AC200`),
     getTabGids(SHEETS.sourceId),
   ]);
 
   const gid = tabGids.get(tab);
-  const src = makeSourcer(tab, gid);
 
   const cell = (r: number, c: number): string | number | null =>
     main[r]?.[c] ?? null;
+  const rawFormula = (r: number, c: number): string | number | null =>
+    formulas[r]?.[c] ?? null;
+
+  const src = (
+    value: number,
+    row: number,
+    col: number,
+    label?: string
+  ): Sourced => {
+    const rf = rawFormula(row, col);
+    const kind = classifyCell(rf, value);
+    const formulaStr =
+      typeof rf === "string" && rf.startsWith("=")
+        ? rf
+        : undefined;
+    return {
+      value,
+      tab,
+      gid,
+      cell: cellRef(row, col),
+      label,
+      formula: formulaStr,
+      kind,
+    };
+  };
 
   const rowByLabel = new Map<string, number>();
   main.forEach((row, i) => {
@@ -400,6 +443,114 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     if (asOf) break;
   }
 
+  // ── Top-of-sheet KPIs (見込全数 / 受注予想) ──
+  const findLabelCell = (label: string) => {
+    for (let r = 0; r < Math.min(6, main.length); r++) {
+      const row = main[r];
+      if (!row) continue;
+      for (let c = 0; c < row.length; c++) {
+        if (toStr(row[c]) === label) {
+          const right = row
+            .slice(c + 1)
+            .findIndex((v) => isFinite(toNum(v)));
+          if (right >= 0) {
+            const col = c + 1 + right;
+            return { row: r, col };
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  const mikomiHit = findLabelCell("見込全数");
+  const jyuchuHit = findLabelCell("受注予想");
+  const mikomiZensu = mikomiHit
+    ? src(toNum(cell(mikomiHit.row, mikomiHit.col)), mikomiHit.row, mikomiHit.col, "見込全数")
+    : src(NaN, 0, 10, "見込全数");
+  const jyuchuYoso = jyuchuHit
+    ? src(toNum(cell(jyuchuHit.row, jyuchuHit.col)), jyuchuHit.row, jyuchuHit.col, "受注予想")
+    : src(NaN, 1, 10, "受注予想");
+
+  // ── CPO / ROI (sheet-provided) ──
+  // CPO: row 7 col 18 (S8). ROI: row 10 col 18 (S11). Detect by label scan.
+  const findMetricByLabel = (
+    label: string,
+    valueOffset = 4
+  ): { row: number; col: number } | null => {
+    for (let r = 0; r < main.length; r++) {
+      const row = main[r];
+      if (!row) continue;
+      for (let c = 0; c < row.length; c++) {
+        const s = toStr(row[c]);
+        if (s === label || s.startsWith(label)) {
+          const col = c + valueOffset;
+          if (isFinite(toNum(row[col]))) return { row: r, col };
+        }
+      }
+    }
+    return null;
+  };
+
+  const cpoHit = findMetricByLabel("全体広告費÷契約数");
+  const roiHit = findMetricByLabel("ROI");
+
+  const cpo: Sourced = cpoHit
+    ? src(toNum(cell(cpoHit.row, cpoHit.col)), cpoHit.row, cpoHit.col, "契約CPO")
+    : isFinite(keiyakuSu.actual.value) && keiyakuSu.actual.value > 0
+    ? derived(
+        kokoku.actual.value / keiyakuSu.actual.value,
+        `広告費 ÷ 契約数`,
+        tab,
+        "契約CPO",
+        gid
+      )
+    : derived(NaN, "広告費 ÷ 契約数", tab, "契約CPO", gid);
+
+  const roi: Sourced = roiHit
+    ? src(toNum(cell(roiHit.row, roiHit.col)), roiHit.row, roiHit.col, "ROI")
+    : isFinite(kokoku.actual.value) && kokoku.actual.value > 0
+    ? derived(
+        (uriage.actual.value - kokoku.actual.value) / kokoku.actual.value,
+        "(売上 − 広告費) ÷ 広告費",
+        tab,
+        "ROI",
+        gid
+      )
+    : derived(NaN, "(売上 − 広告費) ÷ 広告費", tab, "ROI", gid);
+
+  // ── 媒体別予約予測表 (rows ~61-82) ──
+  const forecastHeaderRow = main.findIndex(
+    (r) => toStr(r?.[3]) === "予約数" && toStr(r?.[7]) === "契約率"
+  );
+  const channelForecast: ChannelForecastRow[] = [];
+  if (forecastHeaderRow >= 0) {
+    for (let r = forecastHeaderRow + 1; r < main.length; r++) {
+      const row = main[r];
+      if (!row) continue;
+      const name = toStr(row[2]);
+      if (!name) {
+        if (channelForecast.length > 0) break;
+        continue;
+      }
+      if (name === "合計/Blended" || name === "広告以外" || name === "広告") break;
+      channelForecast.push({
+        name,
+        yoyaku: src(toNum(row[3]), r, 3, `${name} 予約数`),
+        cancelSu: src(toNum(row[4]), r, 4, `${name} キャンセル数`),
+        cancelRate: src(toNum(row[5]), r, 5, `${name} キャンセル率`),
+        menuaiSu: src(toNum(row[6]), r, 6, `${name} 面談数`),
+        keiyakuRate: src(toNum(row[7]), r, 7, `${name} 契約率`),
+        keiyakuSu: src(toNum(row[9]), r, 9, `${name} 契約数`),
+        kokokuHi: src(toNum(row[10]), r, 10, `${name} 広告費`),
+        cpf: src(toNum(row[11]), r, 11, `${name} CPF`),
+        yoyakuCpa: src(toNum(row[12]), r, 12, `${name} 予約CPA`),
+        menuaiCpa: src(toNum(row[14]), r, 14, `${name} 面談CPA`),
+        cpo: src(toNum(row[15]), r, 15, `${name} CPO`),
+      });
+    }
+  }
+
   return {
     view,
     tab,
@@ -408,6 +559,8 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     spreadsheetId: SHEETS.sourceId,
     daysElapsed,
     monthDays,
+    mikomiZensu,
+    jyuchuYoso,
     uriage,
     jinkenhi,
     gaichuhi,
@@ -428,11 +581,14 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     failures,
     cpa,
     cpm,
+    cpo,
+    roi,
     organicTotal,
     adsTotal,
     organic,
     ads,
     plans,
     daily,
+    channelForecast,
   };
 }

@@ -6,13 +6,15 @@ import { Ref } from "./Ref";
 type Props = {
   cpa: Sourced;
   cpm: Sourced;
+  cpo: Sourced;
+  roi: Sourced;
   kokoku: KgiRow;
   keiyakuSu: MeetingKpi;
   menuai: MeetingKpi;
   spreadsheetId: string;
 };
 
-export function CpaCard({ cpa, cpm, kokoku, keiyakuSu, menuai, spreadsheetId }: Props) {
+export function CpaCard({ cpa, cpm, cpo, roi, kokoku, keiyakuSu, menuai, spreadsheetId }: Props) {
   const budgetUse =
     isFinite(kokoku.target.value) &&
     kokoku.target.value > 0 &&
@@ -52,12 +54,32 @@ export function CpaCard({ cpa, cpm, kokoku, keiyakuSu, menuai, spreadsheetId }: 
 
       <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-line-soft">
         <div>
-          <div className="label text-ink-4 text-[9.5px]">面談あたり</div>
+          <div className="label text-ink-4 text-[9.5px]">面談CPA</div>
           <Ref
             src={cpm}
             spreadsheetId={spreadsheetId}
             display={yen(cpm.value)}
             className="num text-sm font-semibold text-ink inline-block leading-none"
+          />
+        </div>
+        <div>
+          <div className="label text-ink-4 text-[9.5px]">契約CPO</div>
+          <Ref
+            src={cpo}
+            spreadsheetId={spreadsheetId}
+            display={yen(cpo.value)}
+            className="num text-sm font-semibold text-ink inline-block leading-none"
+          />
+        </div>
+        <div>
+          <div className="label text-ink-4 text-[9.5px]">ROI</div>
+          <Ref
+            src={roi}
+            spreadsheetId={spreadsheetId}
+            display={pct(roi.value, 0)}
+            className={`num text-sm font-semibold inline-block leading-none ${
+              isFinite(roi.value) && roi.value >= 0 ? "text-ok" : "text-bad"
+            }`}
           />
         </div>
         <div>

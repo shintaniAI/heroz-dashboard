@@ -99,6 +99,8 @@ export function num1(n: number): string {
   return n.toLocaleString(undefined, { maximumFractionDigits: 1 });
 }
 
+export type CellKind = "formula" | "manual" | "derived" | "empty";
+
 export type Sourced = {
   value: number;
   tab: string;
@@ -106,6 +108,7 @@ export type Sourced = {
   gid?: number;
   label?: string;
   formula?: string;
+  kind?: CellKind;
 };
 
 export function colLetter(col: number): string {
@@ -122,13 +125,25 @@ export function cellRef(row: number, col: number): string {
   return `${colLetter(col)}${row + 1}`;
 }
 
+export function classifyCell(
+  rawFormula: unknown,
+  value: number
+): CellKind {
+  if (rawFormula === null || rawFormula === undefined || rawFormula === "") {
+    return isFinite(value) ? "manual" : "empty";
+  }
+  const s = typeof rawFormula === "string" ? rawFormula : String(rawFormula);
+  return s.startsWith("=") ? "formula" : "manual";
+}
+
 export function makeSourcer(tab: string, gid?: number) {
   return (
     value: number,
     row: number,
     col: number,
     label?: string,
-    formula?: string
+    formula?: string,
+    kind?: CellKind
   ): Sourced => ({
     value,
     tab,
@@ -136,6 +151,7 @@ export function makeSourcer(tab: string, gid?: number) {
     cell: cellRef(row, col),
     label,
     formula,
+    kind,
   });
 }
 
@@ -146,9 +162,10 @@ export function sourced(
   col: number,
   label?: string,
   formula?: string,
-  gid?: number
+  gid?: number,
+  kind?: CellKind
 ): Sourced {
-  return { value, tab, gid, cell: cellRef(row, col), label, formula };
+  return { value, tab, gid, cell: cellRef(row, col), label, formula, kind };
 }
 
 export function derived(
@@ -158,7 +175,7 @@ export function derived(
   label?: string,
   gid?: number
 ): Sourced {
-  return { value, tab, gid, cell: MISSING, formula, label };
+  return { value, tab, gid, cell: MISSING, formula, label, kind: "derived" };
 }
 
 export function sheetCellUrl(src: Sourced, spreadsheetId: string): string {

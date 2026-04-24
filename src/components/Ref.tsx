@@ -1,7 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { sheetCellUrl, MISSING, type Sourced } from "@/lib/config";
+import { sheetCellUrl, MISSING, type Sourced, type CellKind } from "@/lib/config";
+
+const kindBadge: Record<CellKind, { label: string; cls: string; help: string }> = {
+  formula: {
+    label: "自動",
+    cls: "text-accent bg-accent-soft",
+    help: "数式で自動計算されるセル",
+  },
+  manual: {
+    label: "手入力",
+    cls: "text-warn bg-warn-soft",
+    help: "人が直接入力した値",
+  },
+  derived: {
+    label: "ダッシュボード計算",
+    cls: "text-ink-2 bg-canvas",
+    help: "ダッシュボード側で計算された派生値",
+  },
+  empty: { label: "空", cls: "text-ink-muted bg-canvas", help: "空セル" },
+};
 
 type Props = {
   src: Sourced;
@@ -67,27 +86,47 @@ export function Ref({ src, spreadsheetId, display, className = "" }: Props) {
           style={{ fontVariantNumeric: "normal" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {src.label && (
-            <div className="text-[11px] text-ink-3 font-medium mb-2">
-              {src.label}
-            </div>
-          )}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            {src.label && (
+              <span className="text-[11px] text-ink-3 font-medium truncate">
+                {src.label}
+              </span>
+            )}
+            {src.kind && (
+              <span
+                className={`text-[9.5px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${kindBadge[src.kind].cls}`}
+                title={kindBadge[src.kind].help}
+              >
+                {kindBadge[src.kind].label}
+              </span>
+            )}
+          </div>
           <div className="space-y-2 text-[11px]">
             <div className="flex items-start justify-between gap-2">
-              <span className="text-ink-4 shrink-0 w-10">タブ</span>
+              <span className="text-ink-4 shrink-0 w-12">タブ</span>
               <span className="text-ink-2 text-right flex-1 break-all">
                 {src.tab}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-ink-4 shrink-0 w-10">セル</span>
+              <span className="text-ink-4 shrink-0 w-12">セル</span>
               <span className="num text-ink text-right">{src.cell}</span>
             </div>
+            {src.kind && (
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-ink-4 shrink-0 w-12">種別</span>
+                <span className="text-ink-2 text-right flex-1">
+                  {kindBadge[src.kind].help}
+                </span>
+              </div>
+            )}
             {src.formula && (
               <div className="flex items-start justify-between gap-2">
-                <span className="text-ink-4 shrink-0 w-10">計算式</span>
-                <span className="text-ink-2 text-right flex-1 break-words">
-                  {src.formula}
+                <span className="text-ink-4 shrink-0 w-12">計算式</span>
+                <span className="text-ink-2 text-right flex-1 break-words font-mono text-[10px]">
+                  {src.formula.length > 200
+                    ? src.formula.slice(0, 200) + "…"
+                    : src.formula}
                 </span>
               </div>
             )}
