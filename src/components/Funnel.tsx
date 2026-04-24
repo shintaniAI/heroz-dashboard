@@ -103,44 +103,41 @@ export function Funnel({
   };
 
   return (
-    <div className="panel p-6">
-      <div className="flex items-baseline justify-between mb-6">
-        <div>
-          <div className="label">Funnel</div>
-          <h3 className="display-serif text-2xl text-ink mt-1">
-            流入から成約まで
-          </h3>
-        </div>
-        <div className="text-right">
-          <div className="label">総転換率</div>
-          <div className="num text-3xl font-semibold text-accent tracking-tight3 leading-none mt-1">
+    <div className="panel p-2">
+      <div className="flex items-baseline justify-between mb-1.5">
+        <h3 className="display-serif text-sm text-ink leading-tight">
+          Funnel — 流入から成約まで
+        </h3>
+        <div className="flex items-baseline gap-1.5">
+          <span className="label text-[9.5px] text-ink-muted">総転換率</span>
+          <span className="num text-base font-semibold text-accent tracking-tight3 leading-none">
             {pct(conversion, 1)}
-          </div>
+          </span>
         </div>
       </div>
 
-      <div className="space-y-2.5">
+      <div className="space-y-1">
         {stages.map((stage, i) => {
           const widthPct = Math.max(6, (numOr0(stage.value) / maxVal) * 100);
           return (
             <div key={stage.label} className="group">
-              <div className="flex items-baseline justify-between mb-1">
-                <div className="flex items-baseline gap-3">
-                  <span className="num text-[10px] text-ink-muted font-semibold w-5">
+              <div className="flex items-baseline justify-between mb-0.5">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="num text-[9px] text-ink-muted font-semibold w-4">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span className="text-sm font-medium text-ink-2">
+                  <span className="text-[11px] font-medium text-ink-2">
                     {stage.label}
                   </span>
                   {stage.sub && (
-                    <span className="text-[11px] text-ink-4 num">
+                    <span className="text-[9.5px] text-ink-4 num">
                       {stage.sub}
                     </span>
                   )}
                 </div>
-                <div className="flex items-baseline gap-3">
+                <div className="flex items-baseline gap-1.5">
                   {stage.footnote && (
-                    <span className="text-[11px] text-ink-4 num">
+                    <span className="text-[9.5px] text-ink-4 num">
                       {stage.footnote}
                     </span>
                   )}
@@ -148,11 +145,11 @@ export function Funnel({
                     src={stage.src}
                     spreadsheetId={spreadsheetId}
                     display={num(stage.value)}
-                    className="num text-xl font-semibold text-ink tracking-tight3"
+                    className="num text-sm font-semibold text-ink tracking-tight3 leading-none"
                   />
                 </div>
               </div>
-              <div className="h-2 bg-line-soft rounded-sm overflow-hidden">
+              <div className="h-1.5 bg-line-soft rounded-sm overflow-hidden">
                 <div
                   className={`h-full ${toneBg[stage.tone ?? "default"]} rounded-sm transition-all`}
                   style={{ width: `${widthPct}%` }}

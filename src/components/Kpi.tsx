@@ -38,39 +38,39 @@ export function Kpi({
   hero = false,
 }: Props) {
   return (
-    <div className="panel p-3 flex flex-col justify-between min-h-[96px]">
-      <div className="flex items-center justify-between gap-2">
-        <span className="label text-[10.5px]">{label}</span>
+    <div className="panel p-2 flex flex-col justify-between">
+      <div className="flex items-center justify-between gap-1.5">
+        <span className="label text-[10px] leading-tight">{label}</span>
         {progress !== undefined && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <span
-              className={`num text-[10.5px] px-1.5 py-0.5 rounded ${chipClass[accent]} font-semibold`}
+              className={`num text-[10px] px-1 py-0.5 rounded ${chipClass[accent]} font-semibold leading-none`}
             >
               {pct(progress, 0)}
             </span>
             {progressNote && (
-              <span className="text-[9px] text-ink-muted">{progressNote}</span>
+              <span className="text-[8.5px] text-ink-muted leading-none">{progressNote}</span>
             )}
           </div>
         )}
       </div>
-      <div className="mt-2">
+      <div className="mt-1.5">
         {src ? (
           <Ref
             src={src}
             spreadsheetId={spreadsheetId}
             display={value}
-            className={`num ${hero ? "text-2xl sm:text-3xl" : "text-xl"} font-semibold text-ink tracking-tight3 leading-none`}
+            className={`num ${hero ? "text-2xl sm:text-3xl" : "text-lg"} font-semibold text-ink tracking-tight3 leading-none`}
           />
         ) : (
           <span
-            className={`num ${hero ? "text-2xl sm:text-3xl" : "text-xl"} font-semibold text-ink tracking-tight3 leading-none`}
+            className={`num ${hero ? "text-2xl sm:text-3xl" : "text-lg"} font-semibold text-ink tracking-tight3 leading-none`}
           >
             {value}
           </span>
         )}
         {(sub || subSrc) && (
-          <div className="text-[10px] text-ink-4 mt-1.5 num">
+          <div className="text-[9.5px] text-ink-4 mt-1 num leading-tight">
             {sub}
             {subSrc && subValue && (
               <>

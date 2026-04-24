@@ -116,22 +116,19 @@ export default async function Page({
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
-      <div className="w-full px-2 sm:px-3 py-4 space-y-4">
-        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-3 border-b border-line">
-          <div>
-            <div className="label text-ink-4 text-[10px]">
-              WSSクラス · Executive Console
-            </div>
-            <h1 className="display-serif text-xl sm:text-2xl text-ink mt-1 tracking-tight3">
-              経営ダッシュボード
+      <div className="w-full px-1.5 sm:px-2 py-2 space-y-2">
+        <header className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-line">
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <h1 className="display-serif text-lg sm:text-xl text-ink tracking-tight3">
+              WSS経営
             </h1>
-            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[10.5px] text-ink-4 num">
+            <div className="flex flex-wrap items-center gap-1.5 text-[10.5px] text-ink-4 num">
               <span>{viewLabel(view)}</span>
               <span className="text-ink-muted">·</span>
               <span>As of {asOf}</span>
               <span className="text-ink-muted">·</span>
               <span>
-                月次進捗 {pct(monthProgress, 0)} ({num(daysElapsed.value)}/
+                月進捗 {pct(monthProgress, 0)} ({num(daysElapsed.value)}/
                 {num(monthDays.value)}日)
               </span>
             </div>
@@ -140,12 +137,12 @@ export default async function Page({
         </header>
 
         <section>
-          <div className="label text-ink-3 mb-2 text-[10px]">Hero KGI</div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+          <div className="label text-ink-3 mb-1 text-[9.5px]">Hero KGI</div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
             <div className="lg:col-span-2">
               <KgiRowCard row={uriage} spreadsheetId={spreadsheetId} hero />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <Kpi
                 label="契約数 進捗率"
                 src={keiyakuSu.actual}
@@ -204,10 +201,10 @@ export default async function Page({
         </section>
 
         <section>
-          <div className="label text-ink-3 mb-2 text-[10px]">
-            Conversion Losses & Unit Economics
+          <div className="label text-ink-3 mb-1 text-[9.5px]">
+            Losses & Unit Economics
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
             <div className="lg:col-span-2">
               <DisqualifiedCard
                 items={failures}
@@ -227,10 +224,10 @@ export default async function Page({
         </section>
 
         <section>
-          <div className="label text-ink-3 mb-2 text-[10px]">
+          <div className="label text-ink-3 mb-1 text-[9.5px]">
             Cost Structure & PL
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-1.5">
             <KgiRowCard row={jinkenhi} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={gaichuhi} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={arari} spreadsheetId={spreadsheetId} />
@@ -246,10 +243,10 @@ export default async function Page({
         </section>
 
         <section>
-          <div className="label text-ink-3 mb-2 text-[10px]">
+          <div className="label text-ink-3 mb-1 text-[9.5px]">
             Channel Performance
           </div>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-1.5">
             <MediaTable
               title="オーガニック媒体別"
               rows={organic}
@@ -269,8 +266,8 @@ export default async function Page({
 
         {daily.length > 0 && (
           <section>
-            <div className="label text-ink-3 mb-2 text-[10px]">Daily</div>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+            <div className="label text-ink-3 mb-1 text-[9.5px]">Daily</div>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-1.5">
               <DailyTable rows={daily} spreadsheetId={spreadsheetId} />
               <DailyChart data={daily} />
             </div>
@@ -279,22 +276,14 @@ export default async function Page({
 
         {plans.length > 0 && (
           <section>
-            <div className="label text-ink-3 mb-2 text-[10px]">Product Mix</div>
+            <div className="label text-ink-3 mb-1 text-[9.5px]">Product Mix</div>
             <PlanTable rows={plans} spreadsheetId={spreadsheetId} />
           </section>
         )}
 
-        <footer className="pt-3 mt-3 border-t border-line space-y-1 text-[10px] text-ink-muted">
-          <div className="flex flex-col sm:flex-row justify-between gap-2">
-            <div>
-              Source: 【WSSクラス】経営/顧客管理(チームボード) ·
-              Auto-refresh 5min
-            </div>
-            <div>全ての数値はクリックで参照元セル・計算式を表示</div>
-          </div>
-          <div className="num">
-            Tab: {data.tab}
-          </div>
+        <footer className="pt-1.5 mt-2 border-t border-line flex flex-wrap justify-between gap-2 text-[9.5px] text-ink-muted">
+          <span>Source: 【WSSクラス】 · Tab: {data.tab} · Auto-refresh 5min</span>
+          <span>クリック=参照元セル/計算式</span>
         </footer>
       </div>
     </main>

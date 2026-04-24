@@ -11,14 +11,13 @@ export function DailyTable({ rows, spreadsheetId }: Props) {
   const totalDiff = totalActual - totalTarget;
 
   return (
-    <div className="panel p-3">
-      <div className="mb-2">
-        <div className="label text-[10px]">Daily</div>
-        <h3 className="display-serif text-base text-ink">
+    <div className="panel p-2">
+      <div className="mb-1">
+        <h3 className="display-serif text-sm text-ink leading-tight">
           日次 — 予約目標 / 実予約 / 差異
         </h3>
       </div>
-      <div className="overflow-x-auto -mx-3">
+      <div className="overflow-x-auto -mx-2">
         <table className="w-full text-xs">
           <thead>
             <tr className="label text-ink-muted border-b border-line-soft text-[9.5px]">
@@ -38,11 +37,11 @@ export function DailyTable({ rows, spreadsheetId }: Props) {
                 numOr0(r.actualRes.value) - numOr0(r.target.value);
               return (
                 <tr key={i} className="border-t border-line-soft">
-                  <td className="py-1.5 pl-2 text-ink-2 text-[11px] num">
+                  <td className="py-1 pl-2 text-ink-2 text-[11px] num">
                     {r.date}
                   </td>
-                  <td className="py-1.5 text-ink-4 text-[11px]">{r.dow}</td>
-                  <td className="py-1.5 text-right">
+                  <td className="py-1 text-ink-4 text-[11px]">{r.dow}</td>
+                  <td className="py-1 text-right">
                     <Ref
                       src={r.target}
                       spreadsheetId={spreadsheetId}
@@ -50,7 +49,7 @@ export function DailyTable({ rows, spreadsheetId }: Props) {
                       className="num text-ink-4 text-[11px]"
                     />
                   </td>
-                  <td className="py-1.5 text-right">
+                  <td className="py-1 text-right">
                     <Ref
                       src={r.reservation}
                       spreadsheetId={spreadsheetId}
@@ -58,7 +57,7 @@ export function DailyTable({ rows, spreadsheetId }: Props) {
                       className="num text-ink-3 text-[11px]"
                     />
                   </td>
-                  <td className="py-1.5 text-right">
+                  <td className="py-1 text-right">
                     <Ref
                       src={r.actualRes}
                       spreadsheetId={spreadsheetId}
@@ -67,7 +66,7 @@ export function DailyTable({ rows, spreadsheetId }: Props) {
                     />
                   </td>
                   <td
-                    className={`py-1.5 text-right pr-2 num text-[11px] ${
+                    className={`py-1 text-right pr-2 num text-[11px] ${
                       diff < 0 ? "text-bad" : "text-ok"
                     }`}
                   >
@@ -80,20 +79,20 @@ export function DailyTable({ rows, spreadsheetId }: Props) {
           </tbody>
           <tfoot>
             <tr className="border-t border-line">
-              <td className="py-1.5 pl-2 label text-ink-2 text-[10px]" colSpan={2}>
+              <td className="py-1 pl-2 label text-ink-2 text-[10px]" colSpan={2}>
                 合計
               </td>
-              <td className="py-1.5 text-right num text-ink text-[11px] font-semibold">
+              <td className="py-1 text-right num text-ink text-[11px] font-semibold">
                 {num(totalTarget)}
               </td>
-              <td className="py-1.5 text-right num text-ink-3 text-[11px]">
+              <td className="py-1 text-right num text-ink-3 text-[11px]">
                 {num(totalRes)}
               </td>
-              <td className="py-1.5 text-right num text-ink text-[11px] font-semibold">
+              <td className="py-1 text-right num text-ink text-[11px] font-semibold">
                 {num(totalActual)}
               </td>
               <td
-                className={`py-1.5 text-right pr-2 num text-[11px] font-semibold ${
+                className={`py-1 text-right pr-2 num text-[11px] font-semibold ${
                   totalDiff < 0 ? "text-bad" : "text-ok"
                 }`}
               >

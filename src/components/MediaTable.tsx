@@ -48,8 +48,8 @@ export function MediaTable({
     const d = diffVal(r);
     const dg = diffGenjiten(r);
     const baseCls = isTotal
-      ? "py-1.5 text-ink font-semibold bg-canvas/40"
-      : "py-1.5 text-ink";
+      ? "py-1 text-ink font-semibold bg-canvas/40"
+      : "py-1 text-ink";
     return (
       <tr
         key={r.name + (isTotal ? "-total" : "")}
@@ -122,17 +122,14 @@ export function MediaTable({
   };
 
   return (
-    <div className="panel p-3">
-      <div className="flex items-baseline justify-between mb-2">
-        <div>
-          <div className="label text-[10px]">Media</div>
-          <h3 className="display-serif text-base text-ink">{title}</h3>
-        </div>
-        <span className="label text-ink-muted text-[10px]">
+    <div className="panel p-2">
+      <div className="flex items-baseline justify-between mb-1">
+        <h3 className="display-serif text-sm text-ink leading-tight">{title}</h3>
+        <span className="label text-ink-muted text-[9.5px]">
           {rows.length}媒体
         </span>
       </div>
-      <div className="overflow-x-auto -mx-3">
+      <div className="overflow-x-auto -mx-2">
         <table className="w-full text-xs">
           <thead>
             <tr className="label text-ink-muted border-b border-line-soft text-[9.5px]">

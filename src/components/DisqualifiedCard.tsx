@@ -14,23 +14,20 @@ export function DisqualifiedCard({ items, totalMeetings, spreadsheetId }: Props)
   const total = items.reduce((s, it) => s + numOr0(it.actual.value), 0);
 
   return (
-    <div className="panel p-5">
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <div className="label">Conversion Loss</div>
-          <h3 className="display-serif text-xl text-ink mt-1">失格内訳</h3>
-        </div>
-        <div className="text-right">
-          <div className="num text-3xl font-semibold text-bad tracking-tight3 leading-none">
+    <div className="panel p-2">
+      <div className="flex items-baseline justify-between mb-1.5">
+        <h3 className="display-serif text-sm text-ink leading-tight">失格内訳</h3>
+        <div className="flex items-baseline gap-1.5">
+          <span className="num text-base font-semibold text-bad tracking-tight3 leading-none">
             {num(total)}
-          </div>
-          <div className="text-[11px] text-ink-4 mt-1 num">
+          </span>
+          <span className="text-[9.5px] text-ink-4 num">
             面談比 {totalMeetings > 0 ? pct(total / totalMeetings, 1) : "-"}
-          </div>
+          </span>
         </div>
       </div>
 
-      <div className="flex h-2 mb-5 bg-line-soft overflow-hidden rounded-sm">
+      <div className="flex h-1.5 mb-1.5 bg-line-soft overflow-hidden rounded-sm">
         {items.map((item, i) => (
           <div
             key={item.label}
@@ -42,24 +39,24 @@ export function DisqualifiedCard({ items, totalMeetings, spreadsheetId }: Props)
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-0.5">
         {items.map((item, i) => (
           <div key={item.label} className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5">
               <span
-                className={`w-2 h-2 rounded-sm ${palette[i % palette.length]}`}
+                className={`w-1.5 h-1.5 rounded-sm ${palette[i % palette.length]}`}
               />
-              <span className="text-sm text-ink-2">{item.label}</span>
+              <span className="text-[11px] text-ink-2 truncate">{item.label}</span>
             </div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-[11px] text-ink-muted num">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[9.5px] text-ink-muted num">
                 {total > 0 ? pct(numOr0(item.actual.value) / total, 0) : "-"}
               </span>
               <Ref
                 src={item.actual}
                 spreadsheetId={spreadsheetId}
                 display={num(item.actual.value)}
-                className="num text-sm font-semibold text-ink w-10 text-right inline-block"
+                className="num text-[11px] font-semibold text-ink w-8 text-right inline-block"
               />
             </div>
           </div>

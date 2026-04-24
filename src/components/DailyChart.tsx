@@ -31,14 +31,11 @@ export function DailyChart({ data }: { data: DailyRow[] }) {
   }));
 
   return (
-    <div className="panel p-5">
-      <div className="mb-4">
-        <div className="label">Daily Trend</div>
-        <h3 className="display-serif text-xl text-ink mt-1">
-          日次推移 — 予約目標 vs 実予約
-        </h3>
-      </div>
-      <div style={{ width: "100%", height: 300 }}>
+    <div className="panel p-2">
+      <h3 className="display-serif text-sm text-ink leading-tight mb-1">
+        日次推移 — 予約目標 vs 実予約
+      </h3>
+      <div style={{ width: "100%", height: 220 }}>
         <ResponsiveContainer>
           <BarChart
             data={rows}

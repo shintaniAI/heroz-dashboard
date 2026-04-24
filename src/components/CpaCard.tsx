@@ -21,22 +21,19 @@ export function CpaCard({ cpa, cpm, kokoku, keiyakuSu, menuai, spreadsheetId }: 
       : NaN;
 
   return (
-    <div className="panel p-5">
-      <div className="mb-5">
-        <div className="label">Acquisition Cost</div>
-        <h3 className="display-serif text-xl text-ink mt-1">獲得コスト</h3>
-      </div>
+    <div className="panel p-2">
+      <h3 className="display-serif text-sm text-ink leading-tight mb-1.5">獲得コスト</h3>
 
-      <div className="mb-5">
-        <div className="label text-ink-4 mb-2">契約あたり (CPA)</div>
+      <div className="mb-1.5">
+        <div className="label text-ink-4 text-[9.5px] mb-0.5">契約あたり CPA</div>
         <Ref
           src={cpa}
           spreadsheetId={spreadsheetId}
           display={yen(cpa.value)}
-          className="num text-3xl sm:text-4xl font-semibold text-accent tracking-tight3 leading-none"
+          className="num text-xl font-semibold text-accent tracking-tight3 leading-none"
         />
-        <div className="text-[11px] text-ink-4 mt-2 num">
-          広告費{" "}
+        <div className="text-[9.5px] text-ink-4 mt-1 num">
+          広告{" "}
           <Ref
             src={kokoku.actual}
             spreadsheetId={spreadsheetId}
@@ -53,25 +50,25 @@ export function CpaCard({ cpa, cpm, kokoku, keiyakuSu, menuai, spreadsheetId }: 
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-line-soft">
+      <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-line-soft">
         <div>
-          <div className="label text-ink-4">面談あたり</div>
+          <div className="label text-ink-4 text-[9.5px]">面談あたり</div>
           <Ref
             src={cpm}
             spreadsheetId={spreadsheetId}
             display={yen(cpm.value)}
-            className="num text-lg font-semibold text-ink mt-1.5 inline-block"
+            className="num text-sm font-semibold text-ink inline-block leading-none"
           />
         </div>
         <div>
-          <div className="label text-ink-4">予算消化</div>
-          <div className="num text-lg font-semibold text-ink mt-1.5">
+          <div className="label text-ink-4 text-[9.5px]">予算消化</div>
+          <div className="num text-sm font-semibold text-ink leading-none">
             {pct(budgetUse, 0)}
           </div>
         </div>
       </div>
 
-      <div className="pt-4 mt-4 border-t border-line-soft text-[11px] text-ink-4 num flex justify-between">
+      <div className="pt-1.5 mt-1.5 border-t border-line-soft text-[9.5px] text-ink-4 num flex justify-between">
         <span>
           広告目標{" "}
           <Ref
