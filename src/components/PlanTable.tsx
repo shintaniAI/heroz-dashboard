@@ -8,39 +8,44 @@ export function PlanTable({ rows }: { rows: Row[] }) {
 
   return (
     <div className="card p-5">
-      <h3 className="font-semibold text-slate-200 mb-3">プラン別売上</h3>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-slate-400 border-b border-slate-700">
-            <th className="text-left py-2 font-normal">プラン</th>
-            <th className="text-right py-2 font-normal">単価</th>
-            <th className="text-right py-2 font-normal">人数</th>
-            <th className="text-right py-2 font-normal">売上</th>
-            <th className="text-right py-2 font-normal">構成比</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((r) => (
-            <tr key={r.name} className="border-b border-slate-800">
-              <td className="py-2 text-slate-200">{r.name}</td>
-              <td className="py-2 text-right tabular-nums text-slate-400">{yen(r.tanka)}</td>
-              <td className="py-2 text-right tabular-nums text-slate-300">{num(r.ninzu)}</td>
-              <td className="py-2 text-right tabular-nums text-white font-medium">{yen(r.uriage)}</td>
-              <td className="py-2 text-right tabular-nums text-slate-400">
-                {total > 0 ? `${((r.uriage / total) * 100).toFixed(1)}%` : "-"}
-              </td>
+      <div className="mb-4">
+        <div className="label-caps text-ink-secondary">Plans</div>
+        <h3 className="text-base font-semibold text-ink mt-1">プラン別売上</h3>
+      </div>
+      <div className="overflow-x-auto -mx-5">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="label-caps text-ink-muted">
+              <th className="text-left pl-5 pb-2 font-semibold">プラン</th>
+              <th className="text-right pb-2 font-semibold">単価</th>
+              <th className="text-right pb-2 font-semibold">人数</th>
+              <th className="text-right pb-2 font-semibold">売上</th>
+              <th className="text-right pr-5 pb-2 font-semibold">構成比</th>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr className="border-t-2 border-slate-600">
-            <td className="py-2 font-medium text-slate-300">合計</td>
-            <td colSpan={2}></td>
-            <td className="py-2 text-right tabular-nums text-white font-bold">{yen(total)}</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
+          </thead>
+          <tbody>
+            {sorted.map((r) => (
+              <tr key={r.name} className="border-t border-line">
+                <td className="py-2.5 pl-5 text-ink-secondary">{r.name}</td>
+                <td className="py-2.5 text-right num text-ink-tertiary">{yen(r.tanka)}</td>
+                <td className="py-2.5 text-right num text-ink-secondary">{num(r.ninzu)}</td>
+                <td className="py-2.5 text-right num text-ink font-semibold">{yen(r.uriage)}</td>
+                <td className="py-2.5 text-right pr-5 num text-ink-tertiary">
+                  {total > 0 ? `${((r.uriage / total) * 100).toFixed(1)}%` : "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-line-strong">
+              <td className="py-3 pl-5 label-caps text-ink-secondary">合計</td>
+              <td colSpan={2}></td>
+              <td className="py-3 text-right num text-ink font-semibold">{yen(total)}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
   );
 }

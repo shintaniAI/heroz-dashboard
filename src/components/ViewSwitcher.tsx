@@ -17,38 +17,44 @@ export function ViewSwitcher({ current }: { current: ViewKey }) {
     router.push(`/?${sp.toString()}`);
   };
 
+  const pillBase =
+    "px-3 py-1.5 text-xs font-semibold tracking-wide transition-colors";
+
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-      <div className="flex rounded-lg overflow-hidden border border-slate-700">
+    <div className="flex items-center gap-2">
+      <div className="flex rounded overflow-hidden border border-line">
         {(["契約", "発生"] as const).map((b) => (
           <button
             key={b}
             onClick={() => update(b, day)}
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`${pillBase} ${
               basis === b
-                ? "bg-brand-600 text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                ? "bg-ink text-bg"
+                : "bg-surface text-ink-secondary hover:bg-surface-elevated"
             }`}
           >
-            {b}ベース
+            {b}
           </button>
         ))}
       </div>
-      <div className="flex rounded-lg overflow-hidden border border-slate-700">
+      <div className="flex rounded overflow-hidden border border-line">
         {(["本日", "昨日"] as const).map((d) => (
           <button
             key={d}
             onClick={() => update(basis as "契約" | "発生", d)}
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`${pillBase} ${
               day === d
-                ? "bg-emerald-600 text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                ? "bg-accent text-bg"
+                : "bg-surface text-ink-secondary hover:bg-surface-elevated"
             }`}
           >
             {d}
           </button>
         ))}
       </div>
+      <span aria-hidden className="hidden">
+        {VIEWS.length}
+      </span>
     </div>
   );
 }

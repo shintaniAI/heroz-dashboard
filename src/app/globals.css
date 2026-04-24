@@ -1,31 +1,71 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg: #0b1120;
-  --card: #0f172a;
-  --muted: #94a3b8;
-  --border: #1e293b;
-  --accent: #3b82f6;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --bg: #0a0a0b;
+  --surface: #111114;
+  --surface-elevated: #17171c;
+  --surface-hover: #1c1c22;
+  --line: #242429;
+  --line-strong: #33333b;
+  --ink: #fafafa;
+  --ink-secondary: #a1a1aa;
+  --ink-tertiary: #71717a;
+  --ink-muted: #52525b;
+  --accent: #f5a524;
+  --ok: #10b981;
+  --warn: #f59e0b;
+  --bad: #ef4444;
 }
 
-html, body {
+html,
+body {
   background: var(--bg);
-  color: #e2e8f0;
+  color: var(--ink);
   font-family: "Inter", "Hiragino Sans", "Meiryo", system-ui, -apple-system, sans-serif;
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: "tnum" 1, "cv11" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 @layer components {
   .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    transition: background-color 150ms ease, border-color 150ms ease;
   }
+  .card-hover:hover {
+    background: var(--surface-elevated);
+  }
+
+  .label-caps {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+  }
+
+  .num {
+    font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--line);
+  }
+}
+
+/* Recharts text inherits smoothing */
+.recharts-text {
+  font-family: "Inter", system-ui, sans-serif;
 }
