@@ -49,19 +49,13 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
 
   const ranges = [
     `${quoted}!A1:I100`,
-    `${quoted}!A100:I135`,
-    `${quoted}!A131:I161`,
     `${quoted}!AH131:AR161`,
     `${quoted}!C85:H97`,
   ];
 
-  const [main, mediaBreakdown, dailyCore, salespeople, plansBlock] = await getRanges(
-    SHEETS.sourceId,
-    ranges
-  );
+  const [main, dailyCore, plansBlock] = await getRanges(SHEETS.sourceId, ranges);
 
-  const row = (r: number) => main[r] ?? [];
-  const cell = (r: number, c: number) => (main[r]?.[c] ?? "") as string | number;
+  const cell = (r: number, c: number): string | number | null => main[r]?.[c] ?? null;
 
   const asOf = toStr(cell(0, 4));
 

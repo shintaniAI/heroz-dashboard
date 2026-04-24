@@ -5,7 +5,6 @@ type Props = {
   value: string;
   sub?: string;
   progress?: number;
-  trend?: "up" | "down" | "flat";
   accent?: "brand" | "success" | "warning" | "danger";
 };
 
