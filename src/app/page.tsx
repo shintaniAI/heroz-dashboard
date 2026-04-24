@@ -8,6 +8,7 @@ import { DisqualifiedCard } from "@/components/DisqualifiedCard";
 import { CpaCard } from "@/components/CpaCard";
 import { MediaTable } from "@/components/MediaTable";
 import { DailyChart } from "@/components/DailyChart";
+import { DailyTable } from "@/components/DailyTable";
 import { PlanTable } from "@/components/PlanTable";
 
 export const dynamic = "force-dynamic";
@@ -114,14 +115,16 @@ export default async function Page({
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-8 py-8 space-y-8">
-        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-line">
+      <div className="w-full px-2 sm:px-3 py-4 space-y-4">
+        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-3 border-b border-line">
           <div>
-            <div className="label text-ink-4">HEROZZ · Executive Console</div>
-            <h1 className="display-serif text-3xl sm:text-4xl text-ink mt-2 tracking-tight3">
+            <div className="label text-ink-4 text-[10px]">
+              HEROZZ · Executive Console
+            </div>
+            <h1 className="display-serif text-xl sm:text-2xl text-ink mt-1 tracking-tight3">
               経営ダッシュボード
             </h1>
-            <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-ink-4 num">
+            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[10.5px] text-ink-4 num">
               <span>{viewLabel(view)}</span>
               <span className="text-ink-muted">·</span>
               <span>As of {asOf}</span>
@@ -136,28 +139,29 @@ export default async function Page({
         </header>
 
         <section>
-          <div className="label text-ink-3 mb-4">Hero KGI</div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="label text-ink-3 mb-2 text-[10px]">Hero KGI</div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
             <div className="lg:col-span-2">
               <KgiRowCard row={uriage} spreadsheetId={spreadsheetId} hero />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               <Kpi
-                label="契約数"
+                label="契約数 進捗率"
                 src={keiyakuSu.actual}
                 value={num(keiyakuSu.actual.value)}
-                sub="目標"
+                sub="月目標"
                 subSrc={keiyakuSu.target}
                 subValue={num(keiyakuSu.target.value)}
                 progress={contractProgress}
+                progressNote="実÷月"
                 accent={contractAccent}
                 spreadsheetId={spreadsheetId}
               />
               <Kpi
-                label="契約率"
+                label="契約率 (契約÷面談)"
                 src={keiyakuRate.actual}
                 value={pct(keiyakuRate.actual.value, 1)}
-                sub="キャンセル"
+                sub="キャンセル率"
                 subSrc={kyansuRate.actual}
                 subValue={pct(kyansuRate.actual.value, 0)}
                 accent="neutral"
@@ -174,7 +178,7 @@ export default async function Page({
                 label="入金数"
                 src={nyuukinSu.actual}
                 value={num(nyuukinSu.actual.value)}
-                sub="契約"
+                sub="契約数"
                 subSrc={keiyakuSu.actual}
                 subValue={num(keiyakuSu.actual.value)}
                 accent="neutral"
@@ -199,10 +203,10 @@ export default async function Page({
         </section>
 
         <section>
-          <div className="label text-ink-3 mb-4">
+          <div className="label text-ink-3 mb-2 text-[10px]">
             Conversion Losses & Unit Economics
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
             <div className="lg:col-span-2">
               <DisqualifiedCard
                 items={failures}
@@ -222,8 +226,10 @@ export default async function Page({
         </section>
 
         <section>
-          <div className="label text-ink-3 mb-4">Cost Structure & PL</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="label text-ink-3 mb-2 text-[10px]">
+            Cost Structure & PL
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
             <KgiRowCard row={jinkenhi} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={gaichuhi} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={arari} spreadsheetId={spreadsheetId} />
@@ -231,15 +237,17 @@ export default async function Page({
             <KgiRowCard row={sonotaHiyou} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={shiharaiTesuryo} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={zenshaFutan} spreadsheetId={spreadsheetId} />
-            <div className="md:col-span-2">
+            <div className="col-span-2 md:col-span-3 xl:col-span-4">
               <KgiRowCard row={eigyoRieki} spreadsheetId={spreadsheetId} hero />
             </div>
           </div>
         </section>
 
         <section>
-          <div className="label text-ink-3 mb-4">Channel Performance</div>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="label text-ink-3 mb-2 text-[10px]">
+            Channel Performance
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
             <MediaTable
               title="オーガニック媒体別"
               rows={organic}
@@ -259,18 +267,22 @@ export default async function Page({
 
         {daily.length > 0 && (
           <section>
-            <DailyChart data={daily} />
+            <div className="label text-ink-3 mb-2 text-[10px]">Daily</div>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+              <DailyTable rows={daily} spreadsheetId={spreadsheetId} />
+              <DailyChart data={daily} />
+            </div>
           </section>
         )}
 
         {plans.length > 0 && (
           <section>
-            <div className="label text-ink-3 mb-4">Product Mix</div>
+            <div className="label text-ink-3 mb-2 text-[10px]">Product Mix</div>
             <PlanTable rows={plans} spreadsheetId={spreadsheetId} />
           </section>
         )}
 
-        <footer className="pt-6 mt-6 border-t border-line space-y-2 text-[11px] text-ink-muted">
+        <footer className="pt-3 mt-3 border-t border-line space-y-1 text-[10px] text-ink-muted">
           <div className="flex flex-col sm:flex-row justify-between gap-2">
             <div>
               Source: 【令和8年度：HERO&apos;ZZ】経営/顧客管理 ·
