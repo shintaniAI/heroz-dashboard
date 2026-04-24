@@ -1,37 +1,47 @@
 export const SHEETS = {
   sourceId:
-    process.env.SOURCE_SPREADSHEET_ID ?? "14mPCHuitBOKYjNhISKwcK2KaVJfZcEjC0GDdrpzCNow",
+    process.env.SOURCE_SPREADSHEET_ID ?? "1SW94JAUtWsxQ6ECU_9V_dhfm0eV8ZHoFFBb3T4LMUuU",
   inputId:
     process.env.INPUT_SPREADSHEET_ID ?? "1Expj4pqdJPcWKEhmh7zTULCTpPqv69xcoqtitlRGrsk",
 } as const;
 
-export type MonthKey = "4月" | "3月" | "2月" | "1月";
+export type MonthKey =
+  | "当月"
+  | "4月"
+  | "3月"
+  | "2月"
+  | "1月"
+  | "12月"
+  | "11月"
+  | "10月";
 export type KindKey = "契約" | "発生";
 export type DayKey = "本日" | "昨日" | null;
 
-export type ViewKey =
-  | { month: "4月"; kind: "契約"; day: "本日" }
-  | { month: "4月"; kind: "契約"; day: "昨日" }
-  | { month: "4月"; kind: "発生"; day: "本日" }
-  | { month: "4月"; kind: "発生"; day: "昨日" }
-  | { month: "3月"; kind: "契約"; day: null }
-  | { month: "3月"; kind: "発生"; day: null }
-  | { month: "2月"; kind: "契約"; day: null }
-  | { month: "1月"; kind: "契約"; day: null };
+export type ViewKey = {
+  month: MonthKey;
+  kind: KindKey;
+  day: DayKey;
+  tab: string;
+};
 
 export const VIEWS: ViewKey[] = [
-  { month: "4月", kind: "契約", day: "本日" },
-  { month: "4月", kind: "契約", day: "昨日" },
-  { month: "4月", kind: "発生", day: "本日" },
-  { month: "4月", kind: "発生", day: "昨日" },
-  { month: "3月", kind: "契約", day: null },
-  { month: "3月", kind: "発生", day: null },
-  { month: "2月", kind: "契約", day: null },
-  { month: "1月", kind: "契約", day: null },
+  { month: "当月", kind: "契約", day: "昨日", tab: "経営管理シート(当月/契約)昨日" },
+  { month: "4月", kind: "契約", day: null, tab: "経営管理シート(4月/契約) " },
+  { month: "3月", kind: "契約", day: null, tab: "経営管理シート(3月/契約)" },
+  { month: "2月", kind: "契約", day: null, tab: "経営管理シート(2月/契約)" },
+  { month: "1月", kind: "契約", day: null, tab: "経営管理シート(1月/契約)" },
+  { month: "1月", kind: "発生", day: null, tab: "経営管理シート(1月/発生)" },
+  { month: "12月", kind: "契約", day: null, tab: "経営管理シート(12月/契約)" },
+  { month: "12月", kind: "発生", day: null, tab: "経営管理シート(12月/発生)" },
+  { month: "11月", kind: "契約", day: null, tab: "経営管理シート(11月/契約)" },
+  { month: "11月", kind: "発生", day: null, tab: "経営管理シート(11月/発生)" },
+  { month: "10月", kind: "契約", day: "本日", tab: "経営管理シート(10月/契約)本日" },
+  { month: "10月", kind: "発生", day: "本日", tab: "経営管理シート(10月/発生)本日 " },
 ];
 
 export function encodeView(v: ViewKey): string {
-  return v.day ? `${v.month}-${v.kind}-${v.day}` : `${v.month}-${v.kind}`;
+  const d = v.day ?? "-";
+  return `${v.month}-${v.kind}-${d}`;
 }
 
 export function decodeView(s: string | undefined): ViewKey {
@@ -45,11 +55,7 @@ export function viewLabel(v: ViewKey): string {
 }
 
 export function tabName(v: ViewKey): string {
-  if (v.month === "4月") return `経営管理シート(${v.month}/${v.kind})${v.day}`;
-  if (v.month === "1月" && v.kind === "契約") {
-    return `経営管理シート(1月/契約)昨日 （新目標）`;
-  }
-  return `経営管理シート(${v.month}/${v.kind})`;
+  return v.tab;
 }
 
 export const MISSING = "—";
@@ -58,7 +64,7 @@ export function toNum(v: unknown): number {
   if (v === null || v === undefined || v === "") return NaN;
   if (typeof v === "number") return isFinite(v) ? v : NaN;
   const s = String(v).replace(/[¥,\s%]/g, "");
-  if (s === "" || s === "-") return NaN;
+  if (s === "" || s === "-" || s === "—") return NaN;
   const n = parseFloat(s);
   return isFinite(n) ? n : NaN;
 }

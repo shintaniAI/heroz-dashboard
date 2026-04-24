@@ -22,7 +22,9 @@ export function ViewSwitcher({ current }: Props) {
     router.push(`/?${sp.toString()}`);
   };
 
-  const months: MonthKey[] = ["4月", "3月", "2月", "1月"];
+  const months: MonthKey[] = Array.from(
+    new Set(VIEWS.map((v) => v.month))
+  ) as MonthKey[];
 
   const findView = (
     month: MonthKey,

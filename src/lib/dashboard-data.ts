@@ -72,6 +72,7 @@ export type DashboardData = {
   gaichuhi: KgiRow;
   arari: KgiRow;
   kokoku: KgiRow;
+  arariMinusKokoku: KgiRow;
   sonotaHiyou: KgiRow;
   shiharaiTesuryo: KgiRow;
   zenshaFutan: KgiRow;
@@ -212,6 +213,7 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
   const gaichuhi = kgiByLabel("外注費");
   const arari = kgiByLabel("粗利");
   const kokoku = kgiByLabel("広告宣伝費");
+  const arariMinusKokoku = kgiByLabel("粗利 - 広告宣伝費", "粗利-広告宣伝費");
   const sonotaHiyou = kgiByLabel("その他費用");
   const shiharaiTesuryo = kgiByLabel("支払手数料");
   const zenshaFutan = kgiByLabel("全社負担コスト");
@@ -219,7 +221,7 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
 
   // ── Meeting KPIs ──
   const totalMeetings = meetingByLabel("面談実施数", "当日面談予約数");
-  const menuai = meetingByLabel("面談数");
+  const menuai = meetingByLabel("面談数", "着座数");
   const kyansuRate = meetingByLabel("キャンセル率");
   const keiyakuRate = meetingByLabel("契約率");
   const keiyakuSu = meetingByLabel("契約数");
@@ -354,9 +356,49 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     }
   }
 
-  const asOf = serialToFullDate(toNum(cell(1, 4)));
-  const daysElapsed = src(toNum(cell(0, 5)), 0, 5, "経過日数");
-  const monthDays = src(toNum(cell(1, 5)), 1, 5, "今月日数");
+  const findHeaderValue = (
+    label: string
+  ): { row: number; col: number; value: number } | null => {
+    for (let r = 0; r < Math.min(5, main.length); r++) {
+      const row = main[r];
+      if (!row) continue;
+      for (let c = 0; c < row.length; c++) {
+        if (toStr(row[c]) !== label) continue;
+        const forward = row
+          .slice(c + 1)
+          .findIndex((v) => isFinite(toNum(v)));
+        if (forward >= 0) {
+          const col = c + 1 + forward;
+          return { row: r, col, value: toNum(row[col]) };
+        }
+        if (c > 0 && isFinite(toNum(row[c - 1]))) {
+          return { row: r, col: c - 1, value: toNum(row[c - 1]) };
+        }
+      }
+    }
+    return null;
+  };
+
+  const elapsedHit = findHeaderValue("経過日数");
+  const monthDaysHit = findHeaderValue("今月日数");
+  const daysElapsed = elapsedHit
+    ? src(elapsedHit.value, elapsedHit.row, elapsedHit.col, "経過日数")
+    : src(NaN, 0, 5, "経過日数");
+  const monthDays = monthDaysHit
+    ? src(monthDaysHit.value, monthDaysHit.row, monthDaysHit.col, "今月日数")
+    : src(NaN, 1, 5, "今月日数");
+
+  let asOf = "";
+  for (let r = 0; r < Math.min(4, main.length); r++) {
+    for (let c = 0; c < (main[r]?.length ?? 0); c++) {
+      const n = toNum(main[r]?.[c]);
+      if (isFinite(n) && n > 40000 && n < 80000) {
+        asOf = serialToFullDate(n);
+        break;
+      }
+    }
+    if (asOf) break;
+  }
 
   return {
     view,
@@ -371,6 +413,7 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     gaichuhi,
     arari,
     kokoku,
+    arariMinusKokoku,
     sonotaHiyou,
     shiharaiTesuryo,
     zenshaFutan,

@@ -71,6 +71,7 @@ export default async function Page({
     gaichuhi,
     arari,
     kokoku,
+    arariMinusKokoku,
     sonotaHiyou,
     shiharaiTesuryo,
     zenshaFutan,
@@ -119,7 +120,7 @@ export default async function Page({
         <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-3 border-b border-line">
           <div>
             <div className="label text-ink-4 text-[10px]">
-              HEROZZ · Executive Console
+              WSSクラス · Executive Console
             </div>
             <h1 className="display-serif text-xl sm:text-2xl text-ink mt-1 tracking-tight3">
               経営ダッシュボード
@@ -234,6 +235,7 @@ export default async function Page({
             <KgiRowCard row={gaichuhi} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={arari} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={kokoku} spreadsheetId={spreadsheetId} />
+            <KgiRowCard row={arariMinusKokoku} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={sonotaHiyou} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={shiharaiTesuryo} spreadsheetId={spreadsheetId} />
             <KgiRowCard row={zenshaFutan} spreadsheetId={spreadsheetId} />
@@ -285,7 +287,7 @@ export default async function Page({
         <footer className="pt-3 mt-3 border-t border-line space-y-1 text-[10px] text-ink-muted">
           <div className="flex flex-col sm:flex-row justify-between gap-2">
             <div>
-              Source: 【令和8年度：HERO&apos;ZZ】経営/顧客管理 ·
+              Source: 【WSSクラス】経営/顧客管理(チームボード) ·
               Auto-refresh 5min
             </div>
             <div>全ての数値はクリックで参照元セル・計算式を表示</div>
