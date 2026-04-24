@@ -43,21 +43,33 @@ export type DashboardData = {
   salespeople: { name: string; menuai: number; keiyaku: number; rate: number }[];
 };
 
+function serialToShortDate(serial: number): string {
+  if (!isFinite(serial) || serial <= 0) return "";
+  const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function serialToFullDate(serial: number): string {
+  if (!isFinite(serial) || serial <= 0) return "";
+  const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
   const tab = TABS.keiei[view];
   const quoted = `'${tab}'`;
 
   const ranges = [
     `${quoted}!A1:I100`,
-    `${quoted}!AH131:AR161`,
+    `${quoted}!A131:AC161`,
     `${quoted}!C85:H97`,
   ];
 
-  const [main, dailyCore, plansBlock] = await getRanges(SHEETS.sourceId, ranges);
+  const [main, dailyBlock, plansBlock] = await getRanges(SHEETS.sourceId, ranges);
 
   const cell = (r: number, c: number): string | number | null => main[r]?.[c] ?? null;
 
-  const asOf = toStr(cell(0, 4));
+  const asOf = serialToFullDate(toNum(cell(1, 4)));
 
   const kgi = {
     uriageTarget: toNum(cell(5, 3)),
@@ -82,19 +94,19 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
   };
 
   const meeting = {
-    menuaiSu: toNum(cell(75, 5)),
-    menuaiTarget: toNum(cell(75, 3)),
-    menuaiGenjiten: toNum(cell(75, 4)),
-    kyansuRate: toNum(cell(76, 5)),
-    keiyakuRate: toNum(cell(77, 5)),
-    keiyakuSu: toNum(cell(78, 5)),
-    keiyakuSuTarget: toNum(cell(78, 3)),
-    keiyakuTanka: toNum(cell(81, 5)),
-    nyuukinSu: toNum(cell(82, 5)),
+    menuaiSu: toNum(cell(76, 5)),
+    menuaiTarget: toNum(cell(76, 3)),
+    menuaiGenjiten: toNum(cell(76, 4)),
+    kyansuRate: toNum(cell(77, 5)),
+    keiyakuRate: toNum(cell(78, 5)),
+    keiyakuSu: toNum(cell(79, 5)),
+    keiyakuSuTarget: toNum(cell(79, 3)),
+    keiyakuTanka: toNum(cell(82, 5)),
+    nyuukinSu: toNum(cell(83, 5)),
   };
 
   const organic: DashboardData["organic"] = [];
-  for (let r = 16; r <= 30; r++) {
+  for (let r = 17; r <= 30; r++) {
     const name = toStr(cell(r, 2)).replace(/^\s+/, "").replace(/^　+/, "");
     if (!name) continue;
     organic.push({
@@ -107,7 +119,7 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
   }
 
   const ads: DashboardData["ads"] = [];
-  for (let r = 31; r <= 72; r++) {
+  for (let r = 32; r <= 71; r++) {
     const name = toStr(cell(r, 2)).replace(/^\s+/, "").replace(/^　+/, "");
     if (!name) continue;
     const target = toNum(cell(r, 3));
@@ -127,26 +139,26 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     const name = toStr(row[0]);
     const tanka = toNum(row[1]);
     const ninzu = toNum(row[4]);
-    if (!name || name === "合計" || !tanka) return;
+    if (!name || name === "合計" || !tanka || ninzu <= 0) return;
     plans.push({ name, tanka, ninzu, uriage: tanka * ninzu });
   });
 
   const daily: DashboardData["daily"] = [];
-  (dailyCore ?? []).forEach((r) => {
-    const dateCell = r[1];
-    const dateStr = toStr(dateCell);
-    if (!dateStr) return;
+  (dailyBlock ?? []).forEach((r, i) => {
+    if (i === 0) return;
+    const dateSerial = toNum(r[1]);
+    if (!dateSerial) return;
     daily.push({
-      date: dateStr,
-      dow: toStr(r[18] ?? r[7]),
-      target: toNum(r[2]),
+      date: serialToShortDate(dateSerial),
+      dow: toStr(r[27]),
+      target: toNum(r[0]),
       reservation: toNum(r[3]),
       actualRes: toNum(r[4]),
     });
   });
 
   const salesNames = ["菅野", "島﨑", "奥田", "榎本", "板東", "久保", "吉田", "金野", "荷福", "澤本"];
-  const salesStub: DashboardData["salespeople"] = salesNames.map((name) => ({
+  const salespeople: DashboardData["salespeople"] = salesNames.map((name) => ({
     name,
     menuai: 0,
     keiyaku: 0,
@@ -162,6 +174,6 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     ads,
     plans,
     daily,
-    salespeople: salesStub,
+    salespeople,
   };
 }
