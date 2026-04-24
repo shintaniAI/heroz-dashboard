@@ -1,131 +1,159 @@
 import { num, pct } from "@/lib/config";
+import type { Sourced } from "@/lib/config";
+import type { MeetingKpi } from "@/lib/dashboard-data";
+import { Ref } from "./Ref";
+
+type Props = {
+  totalMeetings: MeetingKpi;
+  menuai: MeetingKpi;
+  kyansuRate: MeetingKpi;
+  keiyakuRate: MeetingKpi;
+  keiyakuSu: MeetingKpi;
+  nyuukinSu: MeetingKpi;
+  failuresSum: number;
+  failuresLabel: string;
+  spreadsheetId: string;
+};
 
 type Stage = {
   label: string;
   value: number;
+  src: Sourced;
+  footnote?: string;
   sub?: string;
-  tone: "neutral" | "bad" | "ok";
-};
-
-type Props = {
-  totalMeetings: number;
-  totalMeetingsTarget: number;
-  menuaiSu: number;
-  menuaiTarget: number;
-  failures: number;
-  keiyakuSu: number;
-  keiyakuSuTarget: number;
-  keiyakuRate: number;
-  kyansuRate: number;
-  nyuukinSu: number;
-};
-
-const toneValue: Record<Stage["tone"], string> = {
-  neutral: "text-ink",
-  bad: "text-bad",
-  ok: "text-ok",
-};
-
-const toneBar: Record<Stage["tone"], string> = {
-  neutral: "bg-ink-muted",
-  bad: "bg-bad/60",
-  ok: "bg-ok/60",
+  tone?: "default" | "loss" | "win";
 };
 
 export function Funnel({
   totalMeetings,
-  totalMeetingsTarget,
-  menuaiSu,
-  menuaiTarget,
-  failures,
-  keiyakuSu,
-  keiyakuSuTarget,
-  keiyakuRate,
+  menuai,
   kyansuRate,
+  keiyakuRate,
+  keiyakuSu,
   nyuukinSu,
+  failuresSum,
+  failuresLabel,
+  spreadsheetId,
 }: Props) {
+  const maxVal = Math.max(
+    totalMeetings.actual.value,
+    menuai.actual.value,
+    keiyakuSu.actual.value,
+    nyuukinSu.actual.value,
+    failuresSum,
+    1
+  );
+
   const stages: Stage[] = [
     {
       label: "面談実施",
-      value: totalMeetings,
-      sub: `目標 ${num(totalMeetingsTarget)}`,
-      tone: "neutral",
+      value: totalMeetings.actual.value,
+      src: totalMeetings.actual,
+      footnote: `目標 ${num(totalMeetings.target.value)}`,
+      tone: "default",
     },
     {
       label: "有効面談",
-      value: menuaiSu,
-      sub: `目標 ${num(menuaiTarget)} ・ キャンセル ${pct(kyansuRate, 0)}`,
-      tone: "neutral",
+      value: menuai.actual.value,
+      src: menuai.actual,
+      footnote: `キャンセル ${pct(kyansuRate.actual.value, 0)}`,
+      sub: `目標 ${num(menuai.target.value)}`,
+      tone: "default",
     },
     {
       label: "失格",
-      value: failures,
-      sub: "審査落ち・ブラック等",
-      tone: "bad",
+      value: failuresSum,
+      src: menuai.actual,
+      footnote: failuresLabel,
+      tone: "loss",
     },
     {
       label: "契約",
-      value: keiyakuSu,
-      sub: `目標 ${num(keiyakuSuTarget)} ・ 契約率 ${pct(keiyakuRate, 1)}`,
-      tone: "ok",
+      value: keiyakuSu.actual.value,
+      src: keiyakuSu.actual,
+      footnote: `契約率 ${pct(keiyakuRate.actual.value, 1)}`,
+      sub: `目標 ${num(keiyakuSu.target.value)}`,
+      tone: "win",
     },
     {
       label: "入金",
-      value: nyuukinSu,
-      sub: keiyakuSu > 0 ? `対契約 ${pct(nyuukinSu / keiyakuSu, 0)}` : undefined,
-      tone: "ok",
+      value: nyuukinSu.actual.value,
+      src: nyuukinSu.actual,
+      footnote:
+        keiyakuSu.actual.value > 0
+          ? `対契約 ${pct(nyuukinSu.actual.value / keiyakuSu.actual.value, 0)}`
+          : undefined,
+      tone: "win",
     },
   ];
 
-  const maxVal = Math.max(...stages.map((s) => s.value), 1);
-  const conversion = totalMeetings > 0 ? keiyakuSu / totalMeetings : 0;
+  const conversion =
+    totalMeetings.actual.value > 0
+      ? keiyakuSu.actual.value / totalMeetings.actual.value
+      : 0;
+
+  const toneBg = {
+    default: "bg-ink-2",
+    loss: "bg-bad",
+    win: "bg-accent",
+  };
 
   return (
-    <div className="card p-6">
-      <div className="flex items-baseline justify-between mb-6 flex-wrap gap-2">
+    <div className="panel p-6">
+      <div className="flex items-baseline justify-between mb-6">
         <div>
-          <div className="label-caps text-ink-secondary">Funnel</div>
-          <h3 className="text-lg font-semibold text-ink tracking-tight2 mt-1">
+          <div className="label">Funnel</div>
+          <h3 className="display-serif text-2xl text-ink mt-1">
             流入から成約まで
           </h3>
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="label-caps">総転換率</span>
-          <span className="num text-2xl font-semibold text-accent tracking-tight3">
+        <div className="text-right">
+          <div className="label">総転換率</div>
+          <div className="num text-3xl font-semibold text-accent tracking-tight3 leading-none mt-1">
             {pct(conversion, 1)}
-          </span>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-px bg-line">
+      <div className="space-y-2.5">
         {stages.map((stage, i) => {
-          const widthPct = (stage.value / maxVal) * 100;
+          const widthPct = Math.max(6, (stage.value / maxVal) * 100);
           return (
-            <div key={stage.label} className="bg-surface p-3 sm:p-4 relative">
-              <div className="flex items-center gap-1 mb-2">
-                <span className="label-caps">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="text-xs text-ink-secondary font-medium">
-                  {stage.label}
-                </span>
+            <div key={stage.label} className="group">
+              <div className="flex items-baseline justify-between mb-1">
+                <div className="flex items-baseline gap-3">
+                  <span className="num text-[10px] text-ink-muted font-semibold w-5">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-sm font-medium text-ink-2">
+                    {stage.label}
+                  </span>
+                  {stage.sub && (
+                    <span className="text-[11px] text-ink-4 num">
+                      {stage.sub}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-baseline gap-3">
+                  {stage.footnote && (
+                    <span className="text-[11px] text-ink-4 num">
+                      {stage.footnote}
+                    </span>
+                  )}
+                  <Ref
+                    src={stage.src}
+                    spreadsheetId={spreadsheetId}
+                    display={num(stage.value)}
+                    className="num text-xl font-semibold text-ink tracking-tight3"
+                  />
+                </div>
               </div>
-              <div
-                className={`num text-2xl sm:text-3xl font-semibold ${toneValue[stage.tone]} tracking-tight3 leading-none`}
-              >
-                {num(stage.value)}
-              </div>
-              <div className="h-1 mt-3 bg-line overflow-hidden rounded-sm">
+              <div className="h-2 bg-line-soft rounded-sm overflow-hidden">
                 <div
-                  className={`h-full ${toneBar[stage.tone]}`}
+                  className={`h-full ${toneBg[stage.tone ?? "default"]} rounded-sm transition-all`}
                   style={{ width: `${widthPct}%` }}
                 />
               </div>
-              {stage.sub && (
-                <div className="text-[11px] text-ink-tertiary mt-2 leading-tight">
-                  {stage.sub}
-                </div>
-              )}
             </div>
           );
         })}

@@ -1,42 +1,43 @@
-import { VIEWS, type ViewKey, yen, num, pct } from "@/lib/config";
+import { decodeView, yen, num, pct, viewLabel } from "@/lib/config";
 import { fetchDashboard } from "@/lib/dashboard-data";
 import { ViewSwitcher } from "@/components/ViewSwitcher";
 import { Kpi } from "@/components/Kpi";
+import { KgiRowCard } from "@/components/KgiRow";
 import { Funnel } from "@/components/Funnel";
 import { DisqualifiedCard } from "@/components/DisqualifiedCard";
 import { CpaCard } from "@/components/CpaCard";
 import { MediaTable } from "@/components/MediaTable";
 import { DailyChart } from "@/components/DailyChart";
-import { SalesTable } from "@/components/SalesTable";
 import { PlanTable } from "@/components/PlanTable";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
-function isValidView(v: string | undefined): v is ViewKey {
-  return !!v && (VIEWS as readonly string[]).includes(v);
-}
-
-function ErrorScreen({ view, message }: { view: ViewKey; message: string }) {
+function ErrorScreen({ message }: { message: string }) {
   const hasEmail = !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const hasKey = !!process.env.GOOGLE_PRIVATE_KEY;
-  const emailSample = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.slice(0, 20) ?? "(未設定)";
+  const emailSample =
+    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.slice(0, 20) ?? "(未設定)";
 
   return (
-    <main className="min-h-screen bg-bg text-ink p-8">
+    <main className="min-h-screen bg-canvas text-ink p-8">
       <div className="max-w-3xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight2">HEROZZ Executive Console</h1>
-        <div className="card p-6 border-bad/40 space-y-4">
-          <div className="label-caps text-bad">Sheets API Error</div>
-          <pre className="text-sm bg-bg border border-line rounded p-3 overflow-x-auto text-bad num">
+        <h1 className="display-serif text-3xl text-ink">
+          HEROZZ 経営ダッシュボード
+        </h1>
+        <div className="panel p-6 border border-bad/40 space-y-4">
+          <div className="label text-bad">Sheets API Error</div>
+          <pre className="text-sm bg-canvas border border-line rounded p-3 overflow-x-auto text-bad num">
             {message}
           </pre>
-          <div className="text-sm text-ink-secondary space-y-2">
-            <div className="label-caps text-ink-tertiary">環境変数</div>
+          <div className="text-sm text-ink-3 space-y-2">
+            <div className="label text-ink-4">環境変数</div>
             <ul className="list-disc pl-6 text-xs space-y-1 num">
-              <li>GOOGLE_SERVICE_ACCOUNT_EMAIL: {hasEmail ? `設定済 (${emailSample}...)` : "未設定"}</li>
+              <li>
+                GOOGLE_SERVICE_ACCOUNT_EMAIL:{" "}
+                {hasEmail ? `設定済 (${emailSample}...)` : "未設定"}
+              </li>
               <li>GOOGLE_PRIVATE_KEY: {hasKey ? "設定済" : "未設定"}</li>
-              <li>view: {view}</li>
             </ul>
           </div>
         </div>
@@ -45,188 +46,233 @@ function ErrorScreen({ view, message }: { view: ViewKey; message: string }) {
   );
 }
 
-function toneFromProgress(p: number, bad = 0.6, ok = 0.9): "bad" | "warn" | "ok" {
-  if (p >= ok) return "ok";
-  if (p >= bad) return "warn";
-  return "bad";
-}
-
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ view?: string }>;
 }) {
   const sp = await searchParams;
-  const view: ViewKey = isValidView(sp.view) ? sp.view : "契約本日";
+  const view = decodeView(sp.view);
 
   let data;
   try {
     data = await fetchDashboard(view);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return <ErrorScreen view={view} message={message} />;
+    return <ErrorScreen message={message} />;
   }
 
-  const { kgi, meeting, failures, organic, ads, daily, salespeople, plans } = data;
+  const {
+    spreadsheetId,
+    asOf,
+    uriage,
+    jinkenhi,
+    gaichuhi,
+    arari,
+    kokoku,
+    sonotaHiyou,
+    shiharaiTesuryo,
+    zenshaFutan,
+    eigyoRieki,
+    totalMeetings,
+    menuai,
+    kyansuRate,
+    keiyakuRate,
+    keiyakuSu,
+    keiyakuTanka,
+    nyuukinSu,
+    failures,
+    cpa,
+    cpm,
+    organic,
+    ads,
+    plans,
+    daily,
+    daysElapsed,
+    monthDays,
+  } = data;
 
-  const uriageAccent = toneFromProgress(kgi.uriageProgress);
-  const contractProgress =
-    meeting.keiyakuSuTarget > 0 ? meeting.keiyakuSu / meeting.keiyakuSuTarget : 0;
-  const contractAccent = toneFromProgress(contractProgress);
+  const failuresSum = failures.reduce((s, f) => s + f.actual.value, 0);
+  const failuresLabel = `計 ${num(failuresSum)}件`;
+
+  const contractProgress = keiyakuSu.progress.value;
+  const contractAccent =
+    contractProgress >= 0.9 ? "ok" : contractProgress >= 0.6 ? "warn" : "bad";
   const rateAccent =
-    meeting.keiyakuRate >= 0.3 ? "ok" : meeting.keiyakuRate >= 0.2 ? "warn" : "bad";
-  const eigyoAccent = kgi.eigyoRiekiActual >= 0 ? "ok" : "bad";
+    keiyakuRate.actual.value >= 0.3
+      ? "ok"
+      : keiyakuRate.actual.value >= 0.2
+      ? "warn"
+      : "bad";
+
+  const monthProgress =
+    monthDays.value > 0 ? daysElapsed.value / monthDays.value : 0;
 
   return (
-    <main className="min-h-screen bg-bg text-ink">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-8 py-6 space-y-6">
-        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-line">
+    <main className="min-h-screen bg-canvas text-ink">
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-8 py-8 space-y-8">
+        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-line">
           <div>
-            <div className="label-caps text-ink-tertiary">HEROZZ / Executive Console</div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight2 text-ink mt-1">
+            <div className="label text-ink-4">HEROZZ · Executive Console</div>
+            <h1 className="display-serif text-3xl sm:text-4xl text-ink mt-2 tracking-tight3">
               経営ダッシュボード
             </h1>
-            <div className="flex items-center gap-3 mt-2 text-xs text-ink-tertiary num">
-              <span>{data.view}</span>
+            <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-ink-4 num">
+              <span>{viewLabel(view)}</span>
               <span className="text-ink-muted">·</span>
-              <span>As of {data.asOf}</span>
+              <span>As of {asOf}</span>
               <span className="text-ink-muted">·</span>
-              <span>月次進捗 {pct(kgi.monthlyProgress, 0)}</span>
+              <span>
+                月次進捗 {pct(monthProgress, 0)} ({num(daysElapsed.value)}/
+                {num(monthDays.value)}日)
+              </span>
             </div>
           </div>
           <ViewSwitcher current={view} />
         </header>
 
         <section>
-          <div className="label-caps text-ink-secondary mb-3">Headline KPIs</div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <Kpi
-              label="売上実績"
-              value={yen(kgi.uriageActual)}
-              sub={`目標 ${yen(kgi.uriageTarget)} / 差分 ${yen(kgi.uriageDiff)}`}
-              progress={kgi.uriageProgress}
-              accent={uriageAccent}
-              hero
-            />
-            <Kpi
-              label="契約数"
-              value={num(meeting.keiyakuSu)}
-              sub={`目標 ${num(meeting.keiyakuSuTarget)} / 面談 ${num(meeting.menuaiSu)}`}
-              progress={contractProgress}
-              accent={contractAccent}
-              hero
-            />
-            <Kpi
-              label="契約単価"
-              value={yen(meeting.keiyakuTanka)}
-              sub={`入金 ${num(meeting.nyuukinSu)}件`}
-              accent="accent"
-              hero
-            />
-            <Kpi
-              label="契約率"
-              value={pct(meeting.keiyakuRate, 1)}
-              sub={`キャンセル率 ${pct(meeting.kyansuRate, 0)}`}
-              accent={rateAccent}
-              hero
-            />
+          <div className="label text-ink-3 mb-4">Hero KGI</div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <KgiRowCard row={uriage} spreadsheetId={spreadsheetId} hero />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Kpi
+                label="契約数"
+                src={keiyakuSu.actual}
+                value={num(keiyakuSu.actual.value)}
+                sub="目標"
+                subSrc={keiyakuSu.target}
+                subValue={num(keiyakuSu.target.value)}
+                progress={contractProgress}
+                accent={contractAccent}
+                spreadsheetId={spreadsheetId}
+              />
+              <Kpi
+                label="契約率"
+                src={keiyakuRate.actual}
+                value={pct(keiyakuRate.actual.value, 1)}
+                sub="キャンセル"
+                subSrc={kyansuRate.actual}
+                subValue={pct(kyansuRate.actual.value, 0)}
+                accent={rateAccent}
+                spreadsheetId={spreadsheetId}
+              />
+              <Kpi
+                label="契約単価"
+                src={keiyakuTanka.actual}
+                value={yen(keiyakuTanka.actual.value)}
+                accent="accent"
+                spreadsheetId={spreadsheetId}
+              />
+              <Kpi
+                label="入金数"
+                src={nyuukinSu.actual}
+                value={num(nyuukinSu.actual.value)}
+                sub="契約"
+                subSrc={keiyakuSu.actual}
+                subValue={num(keiyakuSu.actual.value)}
+                accent="neutral"
+                spreadsheetId={spreadsheetId}
+              />
+            </div>
           </div>
         </section>
 
         <section>
           <Funnel
-            totalMeetings={meeting.totalMeetingsActual}
-            totalMeetingsTarget={meeting.totalMeetingsTarget}
-            menuaiSu={meeting.menuaiSu}
-            menuaiTarget={meeting.menuaiTarget}
-            failures={failures.total}
-            keiyakuSu={meeting.keiyakuSu}
-            keiyakuSuTarget={meeting.keiyakuSuTarget}
-            keiyakuRate={meeting.keiyakuRate}
-            kyansuRate={meeting.kyansuRate}
-            nyuukinSu={meeting.nyuukinSu}
+            totalMeetings={totalMeetings}
+            menuai={menuai}
+            kyansuRate={kyansuRate}
+            keiyakuRate={keiyakuRate}
+            keiyakuSu={keiyakuSu}
+            nyuukinSu={nyuukinSu}
+            failuresSum={failuresSum}
+            failuresLabel={failuresLabel}
+            spreadsheetId={spreadsheetId}
           />
         </section>
 
         <section>
-          <div className="label-caps text-ink-secondary mb-3">Conversion Losses & Unit Economics</div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div className="label text-ink-3 mb-4">
+            Conversion Losses & Unit Economics
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
               <DisqualifiedCard
-                jishaShinpan={failures.jishaShinpan}
-                black={failures.black}
-                taiouKonnan={failures.taiouKonnan}
-                miseinen={failures.miseinen}
-                total={failures.total}
-                totalMeetings={meeting.totalMeetingsActual}
+                items={failures}
+                totalMeetings={totalMeetings.actual.value}
+                spreadsheetId={spreadsheetId}
               />
             </div>
             <CpaCard
-              kokokuActual={kgi.kokokuActual}
-              kokokuTarget={kgi.kokokuTarget}
-              keiyakuSu={meeting.keiyakuSu}
-              menuaiSu={meeting.menuaiSu}
+              cpa={cpa}
+              cpm={cpm}
+              kokoku={kokoku}
+              keiyakuSu={keiyakuSu}
+              menuai={menuai}
+              spreadsheetId={spreadsheetId}
             />
           </div>
         </section>
 
         <section>
-          <div className="label-caps text-ink-secondary mb-3">Cost Structure</div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <Kpi
-              label="人件費"
-              value={yen(kgi.jinkenhiActual)}
-              sub={`目標 ${yen(kgi.jinkenhiTarget)}`}
-              accent="neutral"
-            />
-            <Kpi
-              label="外注費"
-              value={yen(kgi.gaichuhiActual)}
-              sub={`目標 ${yen(kgi.gaichuhiTarget)}`}
-              accent="neutral"
-            />
-            <Kpi
-              label="広告宣伝費"
-              value={yen(kgi.kokokuActual)}
-              sub={`目標 ${yen(kgi.kokokuTarget)}`}
-              accent="neutral"
-            />
-            <Kpi
-              label="営業利益"
-              value={yen(kgi.eigyoRiekiActual)}
-              sub={`目標 ${yen(kgi.eigyoRiekiTarget)}`}
-              accent={eigyoAccent}
-            />
+          <div className="label text-ink-3 mb-4">Cost Structure & PL</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <KgiRowCard row={jinkenhi} spreadsheetId={spreadsheetId} />
+            <KgiRowCard row={gaichuhi} spreadsheetId={spreadsheetId} />
+            <KgiRowCard row={arari} spreadsheetId={spreadsheetId} />
+            <KgiRowCard row={kokoku} spreadsheetId={spreadsheetId} />
+            <KgiRowCard row={sonotaHiyou} spreadsheetId={spreadsheetId} />
+            <KgiRowCard row={shiharaiTesuryo} spreadsheetId={spreadsheetId} />
+            <KgiRowCard row={zenshaFutan} spreadsheetId={spreadsheetId} />
+            <div className="md:col-span-2">
+              <KgiRowCard row={eigyoRieki} spreadsheetId={spreadsheetId} hero />
+            </div>
           </div>
         </section>
 
         <section>
-          <div className="label-caps text-ink-secondary mb-3">Channel Performance</div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <MediaTable title="オーガニック媒体別" rows={organic} />
-            <MediaTable title="広告・アフィ媒体別（上位15）" rows={ads} max={15} />
+          <div className="label text-ink-3 mb-4">Channel Performance</div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <MediaTable
+              title="オーガニック媒体別"
+              rows={organic}
+              spreadsheetId={spreadsheetId}
+            />
+            <MediaTable
+              title="広告・アフィ媒体別（上位15）"
+              rows={ads}
+              spreadsheetId={spreadsheetId}
+              max={15}
+            />
           </div>
         </section>
 
-        <section>
-          <DailyChart data={daily} />
-        </section>
+        {daily.length > 0 && (
+          <section>
+            <DailyChart data={daily} />
+          </section>
+        )}
 
-        <section>
-          <div className="label-caps text-ink-secondary mb-3">Team & Product Mix</div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <SalesTable rows={salespeople} />
-            <PlanTable rows={plans} />
-          </div>
-        </section>
+        {plans.length > 0 && (
+          <section>
+            <div className="label text-ink-3 mb-4">Product Mix</div>
+            <PlanTable rows={plans} spreadsheetId={spreadsheetId} />
+          </section>
+        )}
 
-        <footer className="pt-5 mt-4 border-t border-line space-y-2 text-[11px] text-ink-muted">
+        <footer className="pt-6 mt-6 border-t border-line space-y-2 text-[11px] text-ink-muted">
           <div className="flex flex-col sm:flex-row justify-between gap-2">
-            <div>Source: 【令和8年度：HERO&apos;ZZ】経営/顧客管理 (チームボード) ・ Auto-refresh 5min</div>
-            <div>Design v1.0 per DESIGN.md</div>
+            <div>
+              Source: 【令和8年度：HERO&apos;ZZ】経営/顧客管理 ·
+              Auto-refresh 5min
+            </div>
+            <div>全ての数値はクリックで参照元セル・計算式を表示</div>
           </div>
           <div className="num">
-            Manual input: 経営管理シートD列 (目標) / ★目標管理C9:C15 (コスト目標) / チャネル別流入管理E72 (広告費実績)
+            Tab: {data.tab}
           </div>
         </footer>
       </div>

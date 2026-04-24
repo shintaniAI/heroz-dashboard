@@ -1,57 +1,83 @@
 import { pct } from "@/lib/config";
+import type { Sourced } from "@/lib/config";
+import { Ref } from "./Ref";
 
 type Props = {
   label: string;
+  src?: Sourced;
   value: string;
   sub?: string;
+  subSrc?: Sourced;
+  subValue?: string;
   progress?: number;
   accent?: "ok" | "warn" | "bad" | "neutral" | "accent";
+  spreadsheetId: string;
   hero?: boolean;
 };
 
 const chipClass: Record<NonNullable<Props["accent"]>, string> = {
-  ok: "text-ok border-ok/40 bg-ok/10",
-  warn: "text-warn border-warn/40 bg-warn/10",
-  bad: "text-bad border-bad/40 bg-bad/10",
-  accent: "text-accent border-accent/40 bg-accent/10",
-  neutral: "text-ink-secondary border-line bg-surface-elevated",
-};
-
-const valueColor: Record<NonNullable<Props["accent"]>, string> = {
-  ok: "text-ok",
-  warn: "text-warn",
-  bad: "text-bad",
-  accent: "text-ink",
-  neutral: "text-ink",
+  ok: "text-ok bg-ok-soft",
+  warn: "text-warn bg-warn-soft",
+  bad: "text-bad bg-bad-soft",
+  accent: "text-accent bg-accent-soft",
+  neutral: "text-ink-3 bg-canvas",
 };
 
 export function Kpi({
   label,
+  src,
   value,
   sub,
+  subSrc,
+  subValue,
   progress,
   accent = "neutral",
+  spreadsheetId,
   hero = false,
 }: Props) {
   return (
-    <div className="card card-hover p-5 flex flex-col justify-between min-h-[128px]">
+    <div className="panel p-5 flex flex-col justify-between min-h-[120px]">
       <div className="flex items-center justify-between">
-        <span className="label-caps">{label}</span>
+        <span className="label">{label}</span>
         {progress !== undefined && (
           <span
-            className={`num text-[10px] px-1.5 py-0.5 rounded border ${chipClass[accent]}`}
+            className={`num text-[11px] px-1.5 py-0.5 rounded ${chipClass[accent]} font-semibold`}
           >
             {pct(progress, 0)}
           </span>
         )}
       </div>
       <div className="mt-3">
-        <div
-          className={`num ${hero ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl"} font-semibold tracking-tight3 leading-none ${accent === "ok" || accent === "warn" || accent === "bad" ? valueColor[accent] : "text-ink"}`}
-        >
-          {value}
-        </div>
-        {sub && <div className="text-xs text-ink-tertiary mt-2 num">{sub}</div>}
+        {src ? (
+          <Ref
+            src={src}
+            spreadsheetId={spreadsheetId}
+            display={value}
+            className={`num ${hero ? "text-3xl sm:text-4xl" : "text-2xl"} font-semibold text-ink tracking-tight3 leading-none`}
+          />
+        ) : (
+          <span
+            className={`num ${hero ? "text-3xl sm:text-4xl" : "text-2xl"} font-semibold text-ink tracking-tight3 leading-none`}
+          >
+            {value}
+          </span>
+        )}
+        {(sub || subSrc) && (
+          <div className="text-[11px] text-ink-4 mt-2 num">
+            {sub}
+            {subSrc && subValue && (
+              <>
+                {" "}
+                <Ref
+                  src={subSrc}
+                  spreadsheetId={spreadsheetId}
+                  display={subValue}
+                  className="text-ink-3"
+                />
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,49 +1,91 @@
-import { yen, num } from "@/lib/config";
+import { yen, pct } from "@/lib/config";
+import type { Sourced } from "@/lib/config";
+import type { KgiRow, MeetingKpi } from "@/lib/dashboard-data";
+import { Ref } from "./Ref";
 
 type Props = {
-  kokokuActual: number;
-  kokokuTarget: number;
-  keiyakuSu: number;
-  menuaiSu: number;
+  cpa: Sourced;
+  cpm: Sourced;
+  kokoku: KgiRow;
+  keiyakuSu: MeetingKpi;
+  menuai: MeetingKpi;
+  spreadsheetId: string;
 };
 
-export function CpaCard({ kokokuActual, kokokuTarget, keiyakuSu, menuaiSu }: Props) {
-  const cpa = keiyakuSu > 0 ? kokokuActual / keiyakuSu : 0;
-  const cpm = menuaiSu > 0 ? kokokuActual / menuaiSu : 0;
-  const budgetUse = kokokuTarget > 0 ? kokokuActual / kokokuTarget : 0;
+export function CpaCard({ cpa, cpm, kokoku, keiyakuSu, menuai, spreadsheetId }: Props) {
+  const budgetUse =
+    kokoku.target.value > 0 ? kokoku.actual.value / kokoku.target.value : 0;
 
   return (
-    <div className="card p-5">
-      <div className="mb-4">
-        <div className="label-caps text-ink-secondary">Acquisition Cost</div>
-        <h3 className="text-base font-semibold text-ink mt-1">獲得コスト</h3>
+    <div className="panel p-5">
+      <div className="mb-5">
+        <div className="label">Acquisition Cost</div>
+        <h3 className="display-serif text-xl text-ink mt-1">獲得コスト</h3>
       </div>
 
       <div className="mb-5">
-        <div className="label-caps text-ink-tertiary mb-2">契約あたり (CPA)</div>
-        <div className="num text-4xl font-semibold text-accent tracking-tight3 leading-none">
-          {yen(cpa)}
-        </div>
-        <div className="text-[11px] text-ink-tertiary mt-2 num">
-          広告費 {yen(kokokuActual)} ÷ 契約 {num(keiyakuSu)}件
+        <div className="label text-ink-4 mb-2">契約あたり (CPA)</div>
+        <Ref
+          src={cpa}
+          spreadsheetId={spreadsheetId}
+          display={yen(cpa.value)}
+          className="num text-3xl sm:text-4xl font-semibold text-accent tracking-tight3 leading-none"
+        />
+        <div className="text-[11px] text-ink-4 mt-2 num">
+          広告費{" "}
+          <Ref
+            src={kokoku.actual}
+            spreadsheetId={spreadsheetId}
+            display={yen(kokoku.actual.value)}
+            className="text-ink-3"
+          />{" "}
+          ÷ 契約{" "}
+          <Ref
+            src={keiyakuSu.actual}
+            spreadsheetId={spreadsheetId}
+            display={`${keiyakuSu.actual.value}件`}
+            className="text-ink-3"
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-px bg-line">
-        <div className="bg-surface pt-3">
-          <div className="label-caps text-ink-tertiary">面談あたり</div>
-          <div className="num text-lg font-semibold text-ink mt-1.5">{yen(cpm)}</div>
+      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-line-soft">
+        <div>
+          <div className="label text-ink-4">面談あたり</div>
+          <Ref
+            src={cpm}
+            spreadsheetId={spreadsheetId}
+            display={yen(cpm.value)}
+            className="num text-lg font-semibold text-ink mt-1.5 inline-block"
+          />
         </div>
-        <div className="bg-surface pt-3 pl-3">
-          <div className="label-caps text-ink-tertiary">予算消化</div>
+        <div>
+          <div className="label text-ink-4">予算消化</div>
           <div className="num text-lg font-semibold text-ink mt-1.5">
-            {(budgetUse * 100).toFixed(0)}%
+            {pct(budgetUse, 0)}
           </div>
         </div>
       </div>
 
-      <div className="pt-4 mt-4 border-t border-line text-[11px] text-ink-tertiary num">
-        広告目標 {yen(kokokuTarget)} / 実績 {yen(kokokuActual)}
+      <div className="pt-4 mt-4 border-t border-line-soft text-[11px] text-ink-4 num flex justify-between">
+        <span>
+          広告目標{" "}
+          <Ref
+            src={kokoku.target}
+            spreadsheetId={spreadsheetId}
+            display={yen(kokoku.target.value)}
+            className="text-ink-3"
+          />
+        </span>
+        <span>
+          実績{" "}
+          <Ref
+            src={kokoku.actual}
+            spreadsheetId={spreadsheetId}
+            display={yen(kokoku.actual.value)}
+            className="text-ink-3"
+          />
+        </span>
       </div>
     </div>
   );

@@ -1,31 +1,32 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg: #0a0a0b;
-  --surface: #111114;
-  --surface-elevated: #17171c;
-  --surface-hover: #1c1c22;
-  --line: #242429;
-  --line-strong: #33333b;
-  --ink: #fafafa;
-  --ink-secondary: #a1a1aa;
-  --ink-tertiary: #71717a;
-  --ink-muted: #52525b;
-  --accent: #f5a524;
-  --ok: #10b981;
-  --warn: #f59e0b;
-  --bad: #ef4444;
+  --canvas: #fafaf7;
+  --paper: #ffffff;
+  --ink: #0a0a0a;
+  --ink-2: #262626;
+  --ink-3: #525252;
+  --ink-4: #737373;
+  --ink-muted: #a3a3a3;
+  --line: #e7e5e4;
+  --line-soft: #f0eeeb;
+  --line-strong: #d6d3d1;
+  --accent: #0d7d72;
+  --accent-ink: #064e47;
+  --ok: #047857;
+  --warn: #b45309;
+  --bad: #b91c1c;
 }
 
 html,
 body {
-  background: var(--bg);
+  background: var(--canvas);
   color: var(--ink);
-  font-family: "Inter", "Hiragino Sans", "Meiryo", system-ui, -apple-system, sans-serif;
-  font-feature-settings: "tnum" 1, "cv11" 1, "ss01" 1;
+  font-family: "Inter", "Hiragino Sans", "Meiryo", system-ui, sans-serif;
+  font-feature-settings: "tnum" 1, "ss01" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,22 +36,30 @@ body {
 }
 
 @layer components {
-  .card {
-    background: var(--surface);
+  .panel {
+    background: var(--paper);
     border: 1px solid var(--line);
-    border-radius: 10px;
-    transition: background-color 150ms ease, border-color 150ms ease;
-  }
-  .card-hover:hover {
-    background: var(--surface-elevated);
+    border-radius: 6px;
   }
 
-  .label-caps {
-    font-size: 11px;
+  .divider {
+    height: 1px;
+    background: var(--line);
+  }
+
+  .hair-top {
+    border-top: 1px solid var(--line);
+  }
+  .hair-bottom {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .label {
+    font-size: 10.5px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--ink-tertiary);
+    color: var(--ink-4);
   }
 
   .num {
@@ -59,13 +68,31 @@ body {
     font-variant-numeric: tabular-nums;
   }
 
-  .divider {
-    height: 1px;
-    background: var(--line);
+  .display-serif {
+    font-family: "Fraunces", "Noto Serif JP", Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .ref-trigger {
+    cursor: pointer;
+    position: relative;
+    border-bottom: 1px dotted transparent;
+    transition: border-color 120ms ease;
+  }
+  .ref-trigger:hover {
+    border-bottom-color: var(--ink-muted);
+  }
+  .ref-trigger[data-open="true"] {
+    border-bottom-color: var(--accent);
   }
 }
 
-/* Recharts text inherits smoothing */
 .recharts-text {
   font-family: "Inter", system-ui, sans-serif;
+  fill: var(--ink-3);
+}
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--line) !important;
 }

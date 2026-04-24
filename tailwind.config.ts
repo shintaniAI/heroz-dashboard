@@ -5,39 +5,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: "#0A0A0B",
-        surface: {
-          DEFAULT: "#111114",
-          elevated: "#17171C",
-          hover: "#1C1C22",
+        canvas: "#FAFAF7",
+        paper: "#FFFFFF",
+        ink: {
+          DEFAULT: "#0A0A0A",
+          2: "#262626",
+          3: "#525252",
+          4: "#737373",
+          muted: "#A3A3A3",
         },
         line: {
-          DEFAULT: "#242429",
-          strong: "#33333B",
-        },
-        ink: {
-          DEFAULT: "#FAFAFA",
-          secondary: "#A1A1AA",
-          tertiary: "#71717A",
-          muted: "#52525B",
+          DEFAULT: "#E7E5E4",
+          soft: "#F0EEEB",
+          strong: "#D6D3D1",
         },
         accent: {
-          DEFAULT: "#F5A524",
-          dim: "#B45309",
+          DEFAULT: "#0D7D72",
+          soft: "#E6F4F1",
+          ink: "#064E47",
         },
         ok: {
-          DEFAULT: "#10B981",
-          dim: "#047857",
+          DEFAULT: "#047857",
+          soft: "#ECFDF5",
         },
         warn: {
-          DEFAULT: "#F59E0B",
-          dim: "#B45309",
+          DEFAULT: "#B45309",
+          soft: "#FEF3C7",
         },
         bad: {
-          DEFAULT: "#EF4444",
-          dim: "#B91C1C",
+          DEFAULT: "#B91C1C",
+          soft: "#FEE2E2",
         },
-        info: "#0EA5E9",
       },
       fontFamily: {
         sans: [
@@ -52,20 +50,24 @@ export default {
           "JetBrains Mono",
           "ui-monospace",
           "SFMono-Regular",
-          "Menlo",
           "Consolas",
           "monospace",
         ],
+        display: [
+          "Fraunces",
+          "Noto Serif JP",
+          "Georgia",
+          "serif",
+        ],
       },
       letterSpacing: {
-        caps: "0.08em",
+        caps: "0.1em",
         tight2: "-0.025em",
-        tight3: "-0.03em",
+        tight3: "-0.035em",
       },
       borderRadius: {
-        DEFAULT: "6px",
-        lg: "10px",
-        xl: "14px",
+        DEFAULT: "4px",
+        lg: "6px",
       },
     },
   },

@@ -10,8 +10,9 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import type { DailyRow } from "@/lib/dashboard-data";
 
-type Row = {
+type ChartRow = {
   date: string;
   dow: string;
   target: number;
@@ -19,60 +20,81 @@ type Row = {
   actualRes: number;
 };
 
-export function DailyChart({ data }: { data: Row[] }) {
+export function DailyChart({ data }: { data: DailyRow[] }) {
+  const rows: ChartRow[] = data.map((r) => ({
+    date: r.date,
+    dow: r.dow,
+    target: r.target.value,
+    reservation: r.reservation.value,
+    actualRes: r.actualRes.value,
+  }));
+
   return (
-    <div className="card p-5">
+    <div className="panel p-5">
       <div className="mb-4">
-        <div className="label-caps text-ink-secondary">Daily Trend</div>
-        <h3 className="text-base font-semibold text-ink mt-1">
+        <div className="label">Daily Trend</div>
+        <h3 className="display-serif text-xl text-ink mt-1">
           日次推移 — 予約目標 vs 実予約
         </h3>
       </div>
       <div style={{ width: "100%", height: 300 }}>
         <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="2 4" stroke="#242429" vertical={false} />
+          <BarChart
+            data={rows}
+            margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
+          >
+            <CartesianGrid
+              strokeDasharray="2 4"
+              stroke="#E7E5E4"
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
-              stroke="#52525b"
+              stroke="#737373"
               fontSize={11}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="#52525b"
+              stroke="#737373"
               fontSize={11}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
-              cursor={{ fill: "rgba(255,255,255,0.03)" }}
+              cursor={{ fill: "rgba(13,125,114,0.04)" }}
               contentStyle={{
-                background: "#111114",
-                border: "1px solid #33333b",
-                borderRadius: 6,
+                background: "#FFFFFF",
+                border: "1px solid #E7E5E4",
+                borderRadius: 8,
                 fontSize: 12,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
               }}
-              labelStyle={{ color: "#fafafa", fontWeight: 600 }}
-              itemStyle={{ color: "#a1a1aa" }}
+              labelStyle={{ color: "#0A0A0A", fontWeight: 600 }}
+              itemStyle={{ color: "#525252" }}
             />
             <Legend
               wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
               iconType="square"
               iconSize={8}
             />
-            <Bar dataKey="target" fill="#33333b" name="予約目標" radius={[2, 2, 0, 0]} />
+            <Bar
+              dataKey="target"
+              fill="#D6D3D1"
+              name="予約目標"
+              radius={[3, 3, 0, 0]}
+            />
             <Bar
               dataKey="reservation"
-              fill="#71717a"
+              fill="#A3A3A3"
               name="総予約"
-              radius={[2, 2, 0, 0]}
+              radius={[3, 3, 0, 0]}
             />
             <Bar
               dataKey="actualRes"
-              fill="#F5A524"
+              fill="#0D7D72"
               name="実予約"
-              radius={[2, 2, 0, 0]}
+              radius={[3, 3, 0, 0]}
             />
           </BarChart>
         </ResponsiveContainer>
