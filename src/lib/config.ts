@@ -1,8 +1,6 @@
 export const SHEETS = {
-  sourceId:
-    process.env.SOURCE_SPREADSHEET_ID ?? "1SW94JAUtWsxQ6ECU_9V_dhfm0eV8ZHoFFBb3T4LMUuU",
-  inputId:
-    process.env.INPUT_SPREADSHEET_ID ?? "1Expj4pqdJPcWKEhmh7zTULCTpPqv69xcoqtitlRGrsk",
+  sourceId: "1SW94JAUtWsxQ6ECU_9V_dhfm0eV8ZHoFFBb3T4LMUuU",
+  inputId: "1Expj4pqdJPcWKEhmh7zTULCTpPqv69xcoqtitlRGrsk",
 } as const;
 
 export type MonthKey =
