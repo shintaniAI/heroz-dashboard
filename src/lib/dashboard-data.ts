@@ -29,12 +29,21 @@ export type DashboardData = {
     menuaiSu: number;
     menuaiTarget: number;
     menuaiGenjiten: number;
+    totalMeetingsActual: number;
+    totalMeetingsTarget: number;
     kyansuRate: number;
     keiyakuRate: number;
     keiyakuSu: number;
     keiyakuSuTarget: number;
     keiyakuTanka: number;
     nyuukinSu: number;
+  };
+  failures: {
+    jishaShinpan: number;
+    black: number;
+    taiouKonnan: number;
+    miseinen: number;
+    total: number;
   };
   organic: { name: string; target: number; genjiten: number; actual: number; progress: number }[];
   ads: { name: string; target: number; genjiten: number; actual: number; progress: number }[];
@@ -97,12 +106,26 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     menuaiSu: toNum(cell(76, 5)),
     menuaiTarget: toNum(cell(76, 3)),
     menuaiGenjiten: toNum(cell(76, 4)),
+    totalMeetingsActual: toNum(cell(15, 5)),
+    totalMeetingsTarget: toNum(cell(15, 3)),
     kyansuRate: toNum(cell(77, 5)),
     keiyakuRate: toNum(cell(78, 5)),
     keiyakuSu: toNum(cell(79, 5)),
     keiyakuSuTarget: toNum(cell(79, 3)),
     keiyakuTanka: toNum(cell(82, 5)),
     nyuukinSu: toNum(cell(83, 5)),
+  };
+
+  const jishaShinpan = toNum(cell(72, 5));
+  const black = toNum(cell(73, 5));
+  const taiouKonnan = toNum(cell(74, 5));
+  const miseinen = toNum(cell(75, 5));
+  const failures = {
+    jishaShinpan,
+    black,
+    taiouKonnan,
+    miseinen,
+    total: jishaShinpan + black + taiouKonnan + miseinen,
   };
 
   const organic: DashboardData["organic"] = [];
@@ -170,6 +193,7 @@ export async function fetchDashboard(view: ViewKey): Promise<DashboardData> {
     asOf,
     kgi,
     meeting,
+    failures,
     organic,
     ads,
     plans,
